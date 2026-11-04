@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <footer class="site-footer">
   <span>© ${new Date().getFullYear()} ${esc(site.author || site.title)}</span>
   <span class="foot-sep">·</span>
-  <span>用 Obsidian 写作 · <a href="${root}feed.xml">RSS</a></span>
+  <span><a href="https://obsidian.md" target="_blank" rel="noopener">用 Obsidian 写作</a>${site.repo ? ' · <a href="' + esc(site.repo) + '" target="_blank" rel="noopener">GitHub</a>' : ''} · <a href="${root}feed.xml">RSS</a></span>
 </footer>
 
 <div class="search-modal" id="search-modal" hidden>

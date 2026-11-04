@@ -618,6 +618,8 @@ namespace GardenDeployer
                     string pages = "https://" + useOwner + ".github.io/" + C.Repo + "/";
                     string txt = File.ReadAllText(cfgFile, Encoding.UTF8);
                     txt = SetJsonString(txt, "siteUrl", pages);
+                    // 页脚 GitHub 链接
+                    txt = SetJsonStringOrAdd(txt, "repo", "https://github.com/" + useOwner + "/" + C.Repo);
                     if (txt.IndexOf("\"你的名字\"") >= 0)
                         txt = SetJsonString(txt, "author", useOwner);
                     File.WriteAllText(cfgFile, txt, new UTF8Encoding(false));
@@ -640,6 +642,19 @@ namespace GardenDeployer
             string repl = "\"" + key + "\": \"" + EscapeJson(value) + "\"";
             if (!Regex.IsMatch(json, pattern)) return json;
             return Regex.Replace(json, pattern, repl);
+        }
+
+        /// <summary>同上，但字段不存在时插入到 JSON 末尾（用于给老配置补新字段）</summary>
+        static string SetJsonStringOrAdd(string json, string key, string value)
+        {
+            string pattern = "\"" + key + "\"\\s*:\\s*\"[^\"]*\"";
+            string repl = "\"" + key + "\": \"" + EscapeJson(value) + "\"";
+            if (Regex.IsMatch(json, pattern)) return Regex.Replace(json, pattern, repl);
+            int close = json.LastIndexOf('}');
+            if (close < 0) return json;
+            string head = json.Substring(0, close).TrimEnd();
+            string sep = head.EndsWith("{") ? "" : ",";
+            return head + sep + "\n  " + repl + "\n}" + json.Substring(close + 1);
         }
 
         static void CopyDir(string src, string dst)

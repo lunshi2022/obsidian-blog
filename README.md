@@ -4,6 +4,8 @@
 
 **零依赖**——构建脚本只用 Node 内置模块，不需要 `npm install`。
 
+> **只想用，不想折腾？** 到 [Releases](https://github.com/lunshi2022/obsidian-blog/releases) 下载 `GardenDeployer.exe` 双击即可，全自动完成安装、建仓、部署。下面的内容是给想了解或手动搭建的人看的。
+
 ## 快速开始
 
 ```bash

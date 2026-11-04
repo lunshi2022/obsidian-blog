@@ -581,6 +581,13 @@
                 </TextBlock>
               </CheckBox>
 
+              <!-- 换主题：改已部署站点配色并自动推送，无需重新部署 -->
+              <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <Button x:Name="BtnTheme" Style="{StaticResource Ghost}" Content="主题：青绿" Width="108"
+                        ToolTip="点击循环切换站点配色（青绿→墨蓝→暖阳），自动提交推送，几分钟后网站换装"/>
+                <TextBlock Text="  部署后可用，自动推送" FontSize="9.5" Foreground="#7f9cbd" VerticalAlignment="Center"/>
+              </StackPanel>
+
               <!-- 步骤 -->
               <TextBlock Text="部署流程" Style="{StaticResource Lbl}" Margin="0,8,0,4"/>
 

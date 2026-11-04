@@ -48,7 +48,7 @@ namespace GardenDeployer
                 "EnvObsDot", "EnvObsVer", "EnvObsPath", "BtnRefresh",
                 "LogHost", "LogScroll", "BtnClearLog",
                 "BarFill", "BarGlow", "BarTrack", "PctText", "PhaseText",
-                "BtnStart", "BtnOpen", "BtnUpdate", "BtnQuit", "HintText", "GaugeTarget", "RingRotate", "ChkNode",
+                "BtnStart", "BtnOpen", "BtnUpdate", "BtnTheme", "BtnQuit", "HintText", "GaugeTarget", "RingRotate", "ChkNode",
                 "HeroTitle", "TopScan",
                 "BgGrid", "GridDrift", "BgScan", "ScanShift", "FlowA", "FlowB", "FlowShiftA", "FlowShiftB"
             };
@@ -201,6 +201,9 @@ namespace GardenDeployer
                 update.ToolTip = "当前版本 v" + Program.AppVersion + "，点击检查新版本";
                 update.Click += delegate { CheckForUpdate(update); };
             }
+
+            Button theme = G<Button>("BtnTheme");
+            if (theme != null) theme.Click += delegate { CycleTheme(theme); };
 
             Button browse = G<Button>("BtnBrowse");
             if (browse != null) browse.Click += delegate { BrowseTarget(); };
@@ -432,6 +435,122 @@ namespace GardenDeployer
             });
             t.IsBackground = true;
             t.Start();
+        }
+
+        // ---------------------------------------------------------------- 换主题
+
+        static readonly string[] ThemeIds = { "garden", "ink", "dawn" };
+        static readonly string[] ThemeNames = { "青绿", "墨蓝", "暖阳" };
+
+        /// <summary>循环切换站点配色：改 site.config.json 后自动提交推送，Actions 自动重建</summary>
+        void CycleTheme(Button btn)
+        {
+            if (running) { AddLog("warn", "正在部署中，等完成再换主题"); return; }
+
+            string target = currentTarget.Length > 0 ? currentTarget : G<TextBox>("TxtPath").Text.Trim();
+            string cfgPath = Path.Combine(target, "site.config.json");
+            if (!File.Exists(cfgPath) || !Directory.Exists(Path.Combine(target, ".git")))
+            {
+                AddLog("warn", "还没有可用的部署目录（或不是 git 仓库），先完成一次部署再换主题");
+                return;
+            }
+
+            string txt;
+            try { txt = File.ReadAllText(cfgPath); }
+            catch (Exception ex) { AddLog("err", "读取 site.config.json 失败：" + ex.Message); return; }
+
+            Match cm = Regex.Match(txt, "\"theme\"\\s*:\\s*\"([^\"]*)\"");
+            string cur = cm.Success ? cm.Groups[1].Value.ToLower() : "garden";
+            int idx = Array.IndexOf(ThemeIds, cur);
+            if (idx < 0) idx = 0;
+            string newId = ThemeIds[(idx + 1) % ThemeIds.Length];
+            string newName = ThemeNames[(idx + 1) % ThemeNames.Length];
+
+            string newTxt = cm.Success
+                ? txt.Substring(0, cm.Groups[1].Index) + newId + txt.Substring(cm.Groups[1].Index + cm.Groups[1].Length)
+                : txt.Replace("}", ",\"theme\": \"" + newId + "\"}");
+            try { File.WriteAllText(cfgPath, newTxt, new System.Text.UTF8Encoding(false)); }
+            catch (Exception ex) { AddLog("err", "写入 site.config.json 失败：" + ex.Message); return; }
+
+            PasswordBox tk = G<PasswordBox>("TxtToken");
+            string token = tk != null ? tk.Password.Trim() : "";
+
+            btn.IsEnabled = false;
+            AddLog("cmd", "切换主题 → " + newName + "，正在推送…");
+
+            Thread t = new Thread(delegate()
+            {
+                string outp;
+                int code = Proc.Run("git", "add site.config.json", target, out outp);
+                if (code == 0)
+                {
+                    code = Proc.Run("git", "commit -m \"theme: switch to " + newId + "\"", target, out outp);
+                }
+
+                bool nothingNew = outp != null && outp.IndexOf("nothing to commit", StringComparison.OrdinalIgnoreCase) >= 0;
+
+                if (code != 0 && !nothingNew)
+                {
+                    Post(delegate
+                    {
+                        btn.IsEnabled = true;
+                        AddLog("err", "提交失败：" + GitErrLine(outp));
+                    });
+                    return;
+                }
+
+                // 推送：有令牌就内嵌 URL 绕开凭据管理器
+                string branch = "main";
+                string bOut;
+                Proc.Run("git", "rev-parse --abbrev-ref HEAD", target, out bOut);
+                if (bOut != null && bOut.Trim().Length > 0) branch = bOut.Trim();
+
+                string pushArgs = "push origin " + branch;
+                if (token.Length > 0)
+                {
+                    string urlOut;
+                    Proc.Run("git", "remote get-url origin", target, out urlOut);
+                    string url = (urlOut ?? "").Trim();
+                    if (url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string bare = Regex.Replace(url, "^https://[^@]*@", "https://");
+                        pushArgs = "push https://x-access-token:" + token + "@" + bare.Substring("https://".Length) + " " + branch;
+                    }
+                }
+
+                int pcode = Proc.Run("git", pushArgs, target, out outp);
+                Post(delegate
+                {
+                    btn.IsEnabled = true;
+                    btn.Content = "主题：" + newName;
+                    if (pcode == 0)
+                        AddLog("ok", "主题已切换为「" + newName + "」，GitHub 构建中，几分钟后网站自动换装");
+                    else
+                    {
+                        AddLog("err", "推送失败：" + GitErrLine(outp));
+                        AddLog("warn", "主题改动已写入本地 site.config.json，可稍后在 Obsidian 里上传任意笔记触发推送");
+                    }
+                });
+            });
+            t.IsBackground = true;
+            t.Start();
+        }
+
+        /// <summary>从 git 输出里挑真实错误行（最后一行固定是通用的 failed to push some refs）</summary>
+        static string GitErrLine(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return "未知错误";
+            string[] lines = s.Split('\n');
+            foreach (string raw in lines)
+            {
+                string l = raw.Trim();
+                if (l.Length == 0) continue;
+                if (l.StartsWith("remote:", StringComparison.OrdinalIgnoreCase)
+                    || l.StartsWith("fatal:", StringComparison.OrdinalIgnoreCase)
+                    || l.StartsWith("! ") || l.StartsWith("error:", StringComparison.OrdinalIgnoreCase))
+                    return l;
+            }
+            return lines[lines.Length - 1].Trim();
         }
 
         // ---------------------------------------------------------------- 初始化

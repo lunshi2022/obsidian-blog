@@ -27,7 +27,7 @@
     <SolidColorBrush x:Key="Warn" Color="#ffb020"/>
     <SolidColorBrush x:Key="Err" Color="#ff4d6d"/>
     <SolidColorBrush x:Key="Txt" Color="#c6d6ec"/>
-    <SolidColorBrush x:Key="Dim" Color="#4d5f80"/>
+    <SolidColorBrush x:Key="Dim" Color="#8aa6c4"/>
     <SolidColorBrush x:Key="Dim2" Color="#2c3a54"/>
     <SolidColorBrush x:Key="Line" Color="#141f33"/>
     <SolidColorBrush x:Key="PanelLine" Color="#1a2c44"/>
@@ -510,7 +510,7 @@
                 <Run Text="变成一座在线花园"/>
               </TextBlock>
 
-              <TextBlock Margin="0,5,0,0" FontSize="10.5" Foreground="#4d5f80" LineHeight="17"
+              <TextBlock Margin="0,5,0,0" FontSize="10.5" Foreground="#8aa6c4" LineHeight="17"
                          TextWrapping="Wrap">
                 自动检测并安装 Git / Obsidian（Node 可选），创建仓库、推送代码、装好插件。
                 全程无需命令行。
@@ -553,7 +553,7 @@
                   <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                     <TextBlock Text="访问令牌 (PAT)" Style="{StaticResource Lbl}" VerticalAlignment="Center"/>
                     <!-- 只放一条最短的决策提示，细节在悬停提示和 README 里 -->
-                    <TextBlock Text="  有效期建议 90 天" FontSize="9" Foreground="#3f5a75"
+                    <TextBlock Text="  有效期建议 90 天" FontSize="9" Foreground="#7f9cbd"
                                VerticalAlignment="Center"/>
                   </StackPanel>
                   <!-- 按钮与输入框同一行、同高，不再压在上方标签行里 -->
@@ -577,7 +577,7 @@
                         ToolTip="不勾也能正常部署：站点由 GitHub Actions 在推送后构建">
                 <TextBlock>
                   <Run Text="顺便安装 Node.js" Foreground="#8fb6d6"/>
-                  <Run Text="  不勾也能发布，只是没法本地预览" Foreground="#3f5a75" FontSize="9.5"/>
+                  <Run Text="  不勾也能发布，只是没法本地预览" Foreground="#7f9cbd" FontSize="9.5"/>
                 </TextBlock>
               </CheckBox>
 
@@ -596,7 +596,7 @@
                 <TextBlock x:Name="S0Mark" Grid.Column="0" Text="1" FontSize="9"
                            FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
                            HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
-                           Foreground="#3f5a75"/>
+                           Foreground="#7f9cbd"/>
                 <StackPanel Grid.Column="1" Margin="9,0,0,0">
                   <TextBlock x:Name="S0Name" Text="环境检测" FontSize="13.5" Foreground="#8fb0cf"/>
                   <TextBlock x:Name="S0Sub" Text="系统版本 · 磁盘空间 · 网络" FontSize="10.5"
@@ -616,7 +616,7 @@
                 <TextBlock x:Name="S1Mark" Grid.Column="0" Text="2" FontSize="9"
                            FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
                            HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
-                           Foreground="#3f5a75"/>
+                           Foreground="#7f9cbd"/>
                 <StackPanel Grid.Column="1" Margin="9,0,0,0">
                   <TextBlock x:Name="S1Name" Text="准备部署目录" FontSize="13.5" Foreground="#8fb0cf"/>
                   <TextBlock x:Name="S1Sub" Text="复制站点模板与插件" FontSize="10.5"
@@ -636,7 +636,7 @@
                 <TextBlock x:Name="S2Mark" Grid.Column="0" Text="3" FontSize="9"
                            FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
                            HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
-                           Foreground="#3f5a75"/>
+                           Foreground="#7f9cbd"/>
                 <StackPanel Grid.Column="1" Margin="9,0,0,0">
                   <TextBlock x:Name="S2Name" Text="安装 Git" FontSize="13.5" Foreground="#8fb0cf"/>
                   <TextBlock x:Name="S2Sub" Text="缺失时自动下载安装" FontSize="10.5"
@@ -656,7 +656,7 @@
                 <TextBlock x:Name="S3Mark" Grid.Column="0" Text="4" FontSize="9"
                            FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
                            HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
-                           Foreground="#3f5a75"/>
+                           Foreground="#7f9cbd"/>
                 <StackPanel Grid.Column="1" Margin="9,0,0,0">
                   <TextBlock x:Name="S3Name" Text="构建站点" FontSize="13.5" Foreground="#8fb0cf"/>
                   <TextBlock x:Name="S3Sub" Text="node src/build.js" FontSize="10.5"
@@ -676,7 +676,7 @@
                 <TextBlock x:Name="S4Mark" Grid.Column="0" Text="5" FontSize="9"
                            FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
                            HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
-                           Foreground="#3f5a75"/>
+                           Foreground="#7f9cbd"/>
                 <StackPanel Grid.Column="1" Margin="9,0,0,0">
                   <TextBlock x:Name="S4Name" Text="创建仓库并推送" FontSize="13.5" Foreground="#8fb0cf"/>
                   <TextBlock x:Name="S4Sub" Text="GitHub API · 自动开启 Pages" FontSize="10.5"
@@ -694,7 +694,7 @@
                 <TextBlock x:Name="S5Mark" Grid.Column="0" Text="6" FontSize="9"
                            FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
                            HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
-                           Foreground="#3f5a75"/>
+                           Foreground="#7f9cbd"/>
                 <StackPanel Grid.Column="1" Margin="9,0,0,0">
                   <TextBlock x:Name="S5Name" Text="安装 Obsidian 与插件" FontSize="13.5" Foreground="#8fb0cf"/>
                   <TextBlock x:Name="S5Sub" Text="预配置上传路径并启用插件" FontSize="10.5"
@@ -731,8 +731,8 @@
                 </Grid.ColumnDefinitions>
                 <Ellipse x:Name="EnvNodeDot" Grid.Column="0" Width="6" Height="6" Fill="#2c3a54" VerticalAlignment="Center"/>
                 <TextBlock Grid.Column="1" Text="Node" Style="{StaticResource Mono}" FontSize="11" Foreground="#8fb6d6" VerticalAlignment="Center"/>
-                <TextBlock x:Name="EnvNodeVer" Grid.Column="2" Text="—" Style="{StaticResource Mono}" FontSize="10.5" Foreground="#4d5f80" VerticalAlignment="Center"/>
-                <TextBlock x:Name="EnvNodePath" Grid.Column="3" Text="" Style="{StaticResource Mono}" FontSize="10" Foreground="#2f4256" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="EnvNodeVer" Grid.Column="2" Text="—" Style="{StaticResource Mono}" FontSize="10.5" Foreground="#8aa6c4" VerticalAlignment="Center"/>
+                <TextBlock x:Name="EnvNodePath" Grid.Column="3" Text="" Style="{StaticResource Mono}" FontSize="10" Foreground="#6b86a8" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
               </Grid>
 
               <Grid Margin="0,3">
@@ -744,8 +744,8 @@
                 </Grid.ColumnDefinitions>
                 <Ellipse x:Name="EnvGitDot" Grid.Column="0" Width="6" Height="6" Fill="#2c3a54" VerticalAlignment="Center"/>
                 <TextBlock Grid.Column="1" Text="Git" Style="{StaticResource Mono}" FontSize="11" Foreground="#8fb6d6" VerticalAlignment="Center"/>
-                <TextBlock x:Name="EnvGitVer" Grid.Column="2" Text="—" Style="{StaticResource Mono}" FontSize="10.5" Foreground="#4d5f80" VerticalAlignment="Center"/>
-                <TextBlock x:Name="EnvGitPath" Grid.Column="3" Text="" Style="{StaticResource Mono}" FontSize="10" Foreground="#2f4256" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="EnvGitVer" Grid.Column="2" Text="—" Style="{StaticResource Mono}" FontSize="10.5" Foreground="#8aa6c4" VerticalAlignment="Center"/>
+                <TextBlock x:Name="EnvGitPath" Grid.Column="3" Text="" Style="{StaticResource Mono}" FontSize="10" Foreground="#6b86a8" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
               </Grid>
 
               <Grid Margin="0,3">
@@ -757,8 +757,8 @@
                 </Grid.ColumnDefinitions>
                 <Ellipse x:Name="EnvObsDot" Grid.Column="0" Width="6" Height="6" Fill="#2c3a54" VerticalAlignment="Center"/>
                 <TextBlock Grid.Column="1" Text="Obsidian" Style="{StaticResource Mono}" FontSize="11" Foreground="#8fb6d6" VerticalAlignment="Center"/>
-                <TextBlock x:Name="EnvObsVer" Grid.Column="2" Text="—" Style="{StaticResource Mono}" FontSize="10.5" Foreground="#4d5f80" VerticalAlignment="Center"/>
-                <TextBlock x:Name="EnvObsPath" Grid.Column="3" Text="" Style="{StaticResource Mono}" FontSize="10" Foreground="#2f4256" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="EnvObsVer" Grid.Column="2" Text="—" Style="{StaticResource Mono}" FontSize="10.5" Foreground="#8aa6c4" VerticalAlignment="Center"/>
+                <TextBlock x:Name="EnvObsPath" Grid.Column="3" Text="" Style="{StaticResource Mono}" FontSize="10" Foreground="#6b86a8" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
               </Grid>
             </StackPanel>
           </Border>
@@ -871,7 +871,7 @@
               <Button x:Name="BtnQuit" Style="{StaticResource Ghost}" Content="退出" Width="76" Margin="10,0,0,0"/>
             </StackPanel>
             <TextBlock x:Name="HintText" HorizontalAlignment="Right" VerticalAlignment="Center"
-                       FontSize="10.5" Foreground="#2f4256" TextAlignment="Right"
+                       FontSize="10.5" Foreground="#6b86a8" TextAlignment="Right"
                        MaxWidth="440" TextWrapping="Wrap" LineHeight="15"
                        Text="部署会修改目标目录并调用系统安装程序，请关闭正在运行的 Obsidian"/>
           </Grid>

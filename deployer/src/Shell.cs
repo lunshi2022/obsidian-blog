@@ -914,7 +914,7 @@ namespace GardenDeployer
             if (cls == "err") return Ui.B("#ff4d6d");
             if (cls == "cmd") return Ui.B("#00e5ff");
             if (cls == "hi") return Ui.B("#ffffff");
-            return Ui.B("#4d5f80");
+            return Ui.B("#8aa6c4");
         }
 
         void AddLog(string cls, string text)

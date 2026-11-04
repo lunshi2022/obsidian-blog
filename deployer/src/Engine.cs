@@ -942,40 +942,65 @@ namespace GardenDeployer
         }
 
         /// <summary>Obsidian 安装包约 100 MB，官方下载其实也走 GitHub Releases（国内很慢）。
-        /// 优先用 ghproxy 镜像转发（国内满速，不直连 GitHub），失败再回退官方 API 直连。</summary>
+        /// 镜像可用性随时变（实测 ghproxy.net 常慢到几十 KB/s），所以版本查询和下载都做多镜像轮换，
+        /// 全部失败才回退官方直连 / 提示手动安装。</summary>
         void InstallObsidianPackage()
         {
-            string ver = null;
-            string url = null;
-            try
-            {
-                Log("cmd", "  查询 Obsidian 最新版（国内镜像）");
-                string json = HttpGet("https://ghproxy.net/https://raw.githubusercontent.com/obsidianmd/obsidian-releases/master/desktop-releases.json", null);
-                Match m = Regex.Match(json, "\"latestVersion\"\\s*:\\s*\"([0-9][^\"]*)\"");
-                if (m.Success)
-                {
-                    ver = m.Groups[1].Value;
-                    url = "https://ghproxy.net/https://github.com/obsidianmd/obsidian-releases/releases/download/v" + ver + "/Obsidian-" + ver + ".exe";
-                    Log("", "  最新版：" + ver);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log("warn", "  镜像查询失败：" + ex.Message);
-            }
+            // 镜像列表：实测速度会变，把当前较快的放前面；空串代表官方直连
+            string[] mirrors = { "https://gh-proxy.com/", "https://ghproxy.net/", "https://ghfast.top/", "" };
 
-            if (url == null)
+            string ver = null;
+            string rawUrl = null;
+
+            // 1) 查版本：依次试镜像，全失败走官方 API
+            foreach (string m in mirrors)
             {
-                Log("warn", "  改用 GitHub 官方地址（国内可能很慢）");
+                if (m.Length == 0) break;   // 版本查询走官方 API 专用分支
+                try
+                {
+                    Log("cmd", "  查询 Obsidian 最新版（" + new Uri(m).Host + "）");
+                    string json = HttpGet(m + "https://raw.githubusercontent.com/obsidianmd/obsidian-releases/master/desktop-releases.json", null);
+                    Match mm = Regex.Match(json, "\"latestVersion\"\\s*:\\s*\"([0-9][^\"]*)\"");
+                    if (mm.Success) { ver = mm.Groups[1].Value; break; }
+                }
+                catch (Exception ex) { Log("warn", "  镜像查询失败（" + new Uri(m).Host + "）：" + ex.Message); }
+            }
+            if (ver == null)
+            {
+                Log("warn", "  镜像查询都不可用，改用 GitHub 官方 API");
                 string json = HttpGet("https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest", null);
                 Match m = Regex.Match(json, "\"browser_download_url\"\\s*:\\s*\"(https://[^\"]*/Obsidian-[^\"/]*\\.exe)\"");
                 if (!m.Success) throw new Exception("无法定位 Obsidian 安装包");
-                url = m.Groups[1].Value;
+                rawUrl = m.Groups[1].Value;
+                Match vm = Regex.Match(rawUrl, "Obsidian-([0-9.]+)\\.exe");
+                if (vm.Success) ver = vm.Groups[1].Value;
             }
+            if (rawUrl == null)
+                rawUrl = "https://github.com/obsidianmd/obsidian-releases/releases/download/v" + ver + "/Obsidian-" + ver + ".exe";
 
-            string name = url.Substring(url.LastIndexOf('/') + 1);
+            Log("", "  最新版：" + ver);
+
+            // 2) 下载：镜像轮换，空串即官方直连；任一成功即用
+            string name = "Obsidian-" + ver + ".exe";
             string dest = Path.Combine(tmpDir, name);
-            Download(url, dest, "Obsidian", 5, 15, 55);
+            Exception last = null;
+            foreach (string m in mirrors)
+            {
+                string host = m.Length > 0 ? new Uri(m).Host : "github.com 官方直连";
+                try
+                {
+                    Log("cmd", "  通过 " + host + " 下载安装包（约 100 MB，可能需要几分钟）");
+                    Download(m + rawUrl, dest, "Obsidian", 5, 15, 55);
+                    last = null;
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    last = ex;
+                    Log("warn", "  " + host + " 下载失败：" + ex.Message);
+                }
+            }
+            if (last != null) throw new Exception("所有下载渠道均失败：" + last.Message);
 
             Log("cmd", "  " + name + " /S");
             int code = Proc.RunShell(dest, "/S");

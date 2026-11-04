@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   build:
+    # 模板/部署器源码仓库本身不发布博客，只有部署器创建的用户博客仓库才跑
+    if: github.repository != 'lunshi2022/obsidian-blog'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

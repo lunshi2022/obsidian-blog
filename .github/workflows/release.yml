@@ -1,0 +1,67 @@
+name: Release Deployer
+
+# 打上 v 开头的标签（如 v1.0）时自动编译部署器并发布到 Release；
+# 也支持在 Actions 页面手动触发（仅产出构建产物，不发 Release）。
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 与 deployer/build.bat 的本地流程保持一致：
+      # 先把博客模板打进 payload.zip，再用系统自带的 .NET Framework 编译器编译。
+      - name: Pack blog template
+        shell: pwsh
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File "deployer\tools\pack-payload.ps1" -Root "${{ github.workspace }}" -Out "deployer\payload.zip"
+
+      - name: Compile GardenDeployer.exe
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $fw = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319'
+          if (-not (Test-Path (Join-Path $fw 'csc.exe'))) {
+            $fw = Join-Path $env:WINDIR 'Microsoft.NET\Framework\v4.0.30319'
+          }
+          if (-not (Test-Path (Join-Path $fw 'csc.exe'))) { throw '.NET Framework compiler not found' }
+          $wpf = Join-Path $fw 'WPF'
+          $xaml = Join-Path $fw 'System.Xaml.dll'
+          if (-not (Test-Path $xaml)) { $xaml = Join-Path $wpf 'System.Xaml.dll' }
+          & (Join-Path $fw 'csc.exe') /nologo /target:winexe /platform:anycpu /optimize+ /codepage:65001 `
+            /out:GardenDeployer.exe `
+            /win32icon:"deployer\src\app.ico" `
+            /resource:"deployer\src\ui.xaml" `
+            /resource:"deployer\src\app.ico" `
+            /resource:"deployer\payload.zip" `
+            /r:"$wpf\PresentationFramework.dll" `
+            /r:"$wpf\PresentationCore.dll" `
+            /r:"$wpf\WindowsBase.dll" `
+            /r:"$xaml" `
+            /r:"$fw\System.Windows.Forms.dll" `
+            /r:"$fw\System.IO.Compression.dll" `
+            /r:"$fw\System.IO.Compression.FileSystem.dll" `
+            "deployer\src\Program.cs" "deployer\src\Shell.cs" "deployer\src\Engine.cs"
+          if ($LASTEXITCODE -ne 0) { throw 'compilation failed' }
+          Get-Item GardenDeployer.exe | Select-Object Name, Length
+
+      # CI 里跳过 --selftest（GUI 自检需要交互桌面），产物先作为 artifact 供下载验证
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GardenDeployer
+          path: GardenDeployer.exe
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: GardenDeployer.exe

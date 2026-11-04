@@ -37,6 +37,10 @@ foreach ($f in @('site.config.json', 'package.json', '.gitignore', 'README.md'))
   if (Test-Path $p) { Copy-Item -LiteralPath $p -Destination (Join-Path $stage $f) -Force }
 }
 
+# user blog repos don't need the deployer's own release workflow
+$rel = Join-Path (Join-Path $stage '.github') 'workflows\release.yml'
+if (Test-Path $rel) { Remove-Item $rel -Force }
+
 if (-not (Test-Path (Join-Path $stage 'src\build.js'))) { Fail 'staging failed: src\build.js missing' }
 
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }

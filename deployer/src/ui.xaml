@@ -867,6 +867,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
               <Button x:Name="BtnStart" Style="{StaticResource Primary}" Content="开始部署" Width="128"/>
               <Button x:Name="BtnOpen" Style="{StaticResource Ghost}" Content="打开站点" Width="100" Margin="10,0,0,0"/>
+              <Button x:Name="BtnUpdate" Style="{StaticResource Ghost}" Content="检查更新" Width="88" Margin="10,0,0,0" ToolTip="从 GitHub 检查并下载新版本"/>
               <Button x:Name="BtnQuit" Style="{StaticResource Ghost}" Content="退出" Width="76" Margin="10,0,0,0"/>
             </StackPanel>
             <TextBlock x:Name="HintText" HorizontalAlignment="Right" VerticalAlignment="Center"

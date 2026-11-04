@@ -18,6 +18,11 @@ namespace GardenDeployer
         public static string AppDir = "";
         public static string PayloadDir = null;
 
+        /// <summary>当前版本号，与 GitHub Release 的 tag（v1.0）对照判断是否要更新</summary>
+        public const string AppVersion = "1.0";
+        /// <summary>检查更新用的 Release 源</summary>
+        public const string UpdateRepo = "lunshi2022/obsidian-blog";
+
         /// <summary>启动跟踪日志，出问题时用户把这个文件发回来即可定位</summary>
         public static string LogPath = "";
 

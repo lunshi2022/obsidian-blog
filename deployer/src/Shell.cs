@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -124,6 +125,7 @@ namespace GardenDeployer
             Need<CheckBox>("ChkNode");
             Need<Button>("BtnRefresh");
             Need<Button>("BtnOpen");
+            Need<Button>("BtnUpdate");
             Need<StackPanel>("LogHost");
             Need<ScrollViewer>("LogScroll");
             Need<Grid>("BarTrack");
@@ -181,6 +183,13 @@ namespace GardenDeployer
 
             Button quit = G<Button>("BtnQuit");
             if (quit != null) quit.Click += delegate { CloseSelf(); };
+
+            Button update = G<Button>("BtnUpdate");
+            if (update != null)
+            {
+                update.ToolTip = "当前版本 v" + Program.AppVersion + "，点击检查新版本";
+                update.Click += delegate { CheckForUpdate(update); };
+            }
 
             Button browse = G<Button>("BtnBrowse");
             if (browse != null) browse.Click += delegate { BrowseTarget(); };
@@ -289,6 +298,129 @@ namespace GardenDeployer
                 tp.Text = chosen;
                 AddLog("cmd", "目标目录已设置：" + chosen);
             }
+        }
+
+        // ---------------------------------------------------------------- 检查更新
+
+        /// <summary>查询 GitHub Release 最新版本；有新版则下载并自动替换重启</summary>
+        void CheckForUpdate(Button btn)
+        {
+            btn.IsEnabled = false;
+            AddLog("cmd", "正在检查更新…（当前版本 v" + Program.AppVersion + "）");
+
+            Thread t = new Thread(delegate()
+            {
+                string tag = "";
+                string exeUrl = "";
+                try
+                {
+                    using (TimeoutClient wc = new TimeoutClient())
+                    {
+                        wc.Headers["User-Agent"] = "GardenDeployer";
+                        wc.Headers["Accept"] = "application/vnd.github+json";
+                        wc.Encoding = new System.Text.UTF8Encoding(false);
+                        string json = wc.DownloadString(
+                            "https://api.github.com/repos/" + Program.UpdateRepo + "/releases/latest");
+                        Match mt = Regex.Match(json, "\"tag_name\"\\s*:\\s*\"(v[^\"]*)\"");
+                        if (mt.Success) tag = mt.Groups[1].Value;
+                        Match mu = Regex.Match(json, "\"browser_download_url\"\\s*:\\s*\"(https://[^\"]*\\.exe)\"");
+                        if (mu.Success) exeUrl = mu.Groups[1].Value;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Post(delegate { AddLog("err", "检查更新失败：" + ex.Message); btn.IsEnabled = true; });
+                    return;
+                }
+
+                string latest = tag.TrimStart('v');
+                string cur = Program.AppVersion.TrimStart('v');
+                bool newer;
+                try { newer = new Version(latest).CompareTo(new Version(cur)) > 0; }
+                catch { newer = latest.Length > 0 && latest != cur; }
+
+                Post(delegate
+                {
+                    if (tag.Length == 0)
+                    {
+                        AddLog("err", "未读到版本信息（Release 页面可能还没有发布过）");
+                        btn.IsEnabled = true;
+                        return;
+                    }
+                    if (!newer)
+                    {
+                        AddLog("ok", "已是最新版本 v" + Program.AppVersion);
+                        btn.IsEnabled = true;
+                        return;
+                    }
+                    AddLog("cmd", "发现新版本 " + tag + "，开始下载…");
+                    if (exeUrl.Length == 0)
+                    {
+                        AddLog("err", "Release 附件里没有 exe，请到 GitHub Releases 页面手动下载");
+                        btn.IsEnabled = true;
+                        return;
+                    }
+                    DownloadUpdate(tag, exeUrl, btn);
+                });
+            });
+            t.IsBackground = true;
+            t.Start();
+        }
+
+        /// <summary>下载新版 exe 到旁路文件，确认后由 cmd 在本进程退出后替换并重启</summary>
+        void DownloadUpdate(string tag, string url, Button btn)
+        {
+            string exePath;
+            try { exePath = Process.GetCurrentProcess().MainModule.FileName; }
+            catch { exePath = Path.Combine(Program.AppDir, "GardenDeployer.exe"); }
+            int pid = Process.GetCurrentProcess().Id;
+            string newFile = exePath + ".update.exe";
+
+            Thread t = new Thread(delegate()
+            {
+                try
+                {
+                    using (TimeoutClient wc = new TimeoutClient())
+                    {
+                        wc.Headers["User-Agent"] = "GardenDeployer";
+                        wc.DownloadFile(url, newFile);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    try { File.Delete(newFile); } catch { }
+                    Post(delegate { AddLog("err", "下载失败：" + ex.Message); btn.IsEnabled = true; });
+                    return;
+                }
+
+                Post(delegate
+                {
+                    if (MessageBox.Show("新版本 " + tag + " 已下载。\n点击「确定」自动替换并重启部署器。",
+                            "检查更新", MessageBoxButton.OKCancel, MessageBoxImage.Information) != MessageBoxResult.OK)
+                    {
+                        btn.IsEnabled = true;
+                        return;
+                    }
+                    // exe 运行中无法覆盖自己：交给 cmd 等本进程退出后再替换、重启
+                    string bat = Path.Combine(Path.GetTempPath(), "garden-update.bat");
+                    File.WriteAllText(bat,
+                        "@echo off\r\n" +
+                        ":wait\r\n" +
+                        "tasklist /FI \"PID eq " + pid + "\" | find \"" + pid + "\" >nul\r\n" +
+                        "if not errorlevel 1 ( timeout /t 1 /nobreak >nul & goto wait )\r\n" +
+                        "move /y \"" + newFile + "\" \"" + exePath + "\"\r\n" +
+                        "start \"\" \"" + exePath + "\"\r\n",
+                        new System.Text.UTF8Encoding(false));
+                    Process.Start(new ProcessStartInfo(bat)
+                    {
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    });
+                    CloseSelf();
+                });
+            });
+            t.IsBackground = true;
+            t.Start();
         }
 
         // ---------------------------------------------------------------- 初始化

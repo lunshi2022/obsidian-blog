@@ -465,7 +465,7 @@ namespace GardenDeployer
                 string target = currentTarget.Length > 0 ? currentTarget : G<TextBox>("TxtPath").Text.Trim();
                 string cfgPath = Path.Combine(target, "site.config.json");
                 if (!File.Exists(cfgPath)) return;
-                Match cm = Regex.Match(File.ReadAllText(cfgPath), "\"theme\"\s*:\s*\"([^\"]*)\"");
+                Match cm = Regex.Match(File.ReadAllText(cfgPath), "\"theme\"\\s*:\\s*\"([^\"]*)\"");
                 string cur = cm.Success ? cm.Groups[1].Value.ToLower() : "garden";
                 string nxt = ThemeAfter(cur);
                 btn.Content = "主题→" + ThemeNameOf(nxt);
@@ -596,9 +596,9 @@ namespace GardenDeployer
             string docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             tp.Text = Path.Combine(docs, "GardenBlog");
 
-            // 表头上显示当前运行权限，比原来的 MODE/TARGET 两个缩写有意义
+            // 表头 USER 块显示当前运行权限（恢复参考项目原来的 MODE / GUI 装饰风格）
             TextBlock target = G<TextBlock>("GaugeTarget");
-            if (target != null) target.Text = IsAdmin() ? "管理员" : "普通用户";
+            if (target != null) target.Text = IsAdmin() ? "ADMIN" : "USER";
 
             Button open = G<Button>("BtnOpen");
             if (open != null) open.IsEnabled = false;

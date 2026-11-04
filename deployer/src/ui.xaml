@@ -452,12 +452,19 @@
             </StackPanel>
           </StackPanel>
 
-          <!-- 当前权限（原来那对 MODE/TARGET 谜语块换成了这一个能看懂的） -->
+          <!-- 头部右侧装饰仪表（MODE / GUI + USER 权限），沿用参考项目的样式 -->
           <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+            <Border Background="#0a1220" BorderBrush="#152539" BorderThickness="1" CornerRadius="4" Padding="9,3" Margin="0,0,8,0">
+              <StackPanel>
+                <TextBlock Text="MODE" Style="{StaticResource Lbl}" FontSize="8"/>
+                <TextBlock Text="GUI" Style="{StaticResource Mono}"
+                           FontSize="10.5" Foreground="#6f8fae"/>
+              </StackPanel>
+            </Border>
             <Border Background="#0a1220" BorderBrush="#152539" BorderThickness="1" CornerRadius="4" Padding="9,3">
               <StackPanel>
-                <TextBlock Text="运行权限" Style="{StaticResource Lbl}" FontSize="8"/>
-                <TextBlock x:Name="GaugeTarget" Text="普通用户" Style="{StaticResource Mono}"
+                <TextBlock Text="USER" Style="{StaticResource Lbl}" FontSize="8"/>
+                <TextBlock x:Name="GaugeTarget" Text="USER" Style="{StaticResource Mono}"
                            FontSize="10.5" Foreground="#6f8fae"
                            ToolTip="普通权限下无法安装 Git / Obsidian；点「开始部署」时可选择提权重启"/>
               </StackPanel>

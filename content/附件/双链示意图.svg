@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 240" width="680" height="240" role="img" aria-label="双链示意图">
+  <rect width="680" height="240" fill="#fbfaf7"/>
+
+  <text x="40" y="40" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="13" fill="#8b9199" letter-spacing="1">双向链接</text>
+
+  <!-- A -->
+  <g>
+    <rect x="50" y="70" width="150" height="86" rx="10" fill="#ffffff" stroke="#e9e5dd"/>
+    <rect x="50" y="70" width="4" height="86" rx="2" fill="#17685a"/>
+    <text x="70" y="104" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="600" fill="#1b1f24">读书笔记</text>
+    <text x="70" y="126" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="11.5" fill="#8b9199">提到了「深度工作」</text>
+    <text x="70" y="144" font-family="ui-monospace, Consolas, monospace" font-size="11" fill="#17685a">[[深度工作]]</text>
+  </g>
+
+  <!-- B -->
+  <g>
+    <rect x="265" y="70" width="150" height="86" rx="10" fill="#ffffff" stroke="#17685a" stroke-width="1.5"/>
+    <rect x="265" y="70" width="4" height="86" rx="2" fill="#17685a"/>
+    <text x="285" y="104" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="600" fill="#1b1f24">深度工作</text>
+    <text x="285" y="126" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="11.5" fill="#8b9199">被引用的那一篇</text>
+    <text x="285" y="144" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="11" fill="#8b9199">页脚自动出现</text>
+  </g>
+
+  <!-- C -->
+  <g>
+    <rect x="480" y="70" width="150" height="86" rx="10" fill="#ffffff" stroke="#e9e5dd"/>
+    <rect x="480" y="70" width="4" height="86" rx="2" fill="#17685a"/>
+    <text x="500" y="104" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="600" fill="#1b1f24">精力管理</text>
+    <text x="500" y="126" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="11.5" fill="#8b9199">也提到了它</text>
+    <text x="500" y="144" font-family="ui-monospace, Consolas, monospace" font-size="11" fill="#17685a">[[深度工作]]</text>
+  </g>
+
+  <!-- arrows to B -->
+  <path d="M205 100 H258" stroke="#17685a" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M477 100 H420" stroke="#17685a" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- backlink dashed -->
+  <path d="M420 138 C380 176, 270 176, 245 138" stroke="#8b9199" stroke-width="1.4" fill="none" stroke-dasharray="4 4" marker-end="url(#arrowGrey)"/>
+  <text x="310" y="196" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="11.5" fill="#8b9199">反向链接：谁引用了我</text>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#17685a"/>
+    </marker>
+    <marker id="arrowGrey" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8b9199"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,9 @@
+{
+  "id": "blog-uploader",
+  "name": "Blog Uploader",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "一键把当前笔记上传到本地博客仓库：自动复制附件、构建站点、git 推送发布。",
+  "author": "论世先生",
+  "isDesktopOnly": true
+}

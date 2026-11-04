@@ -1,0 +1,13 @@
+{
+  "name": "obsidian-blog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "用 Obsidian 写作，一键发布到 GitHub Pages 的零依赖静态博客",
+  "scripts": {
+    "build": "node src/build.js",
+    "dev": "node src/build.js --serve --port=4321"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

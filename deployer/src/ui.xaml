@@ -1,0 +1,884 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+       
+        x:Name="Root"
+        Title="数字花园 DEPLOYER"
+        Width="1064" Height="700"
+        WindowStyle="None" ResizeMode="CanMinimize"
+        WindowStartupLocation="CenterScreen"
+        Background="#05070e"
+        FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI"
+        FontSize="13"
+        UseLayoutRounding="True" SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType">
+
+  <shell:WindowChrome.WindowChrome>
+    <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="0" GlassFrameThickness="0" CornerRadius="0" />
+  </shell:WindowChrome.WindowChrome>
+
+  <Window.Resources>
+    <SolidColorBrush x:Key="Cyan" Color="#00e5ff"/>
+    <SolidColorBrush x:Key="CyanDim" Color="#0a7d92"/>
+    <SolidColorBrush x:Key="Edge" Color="#7feaff"/>
+    <SolidColorBrush x:Key="Ok" Color="#00ffa3"/>
+    <SolidColorBrush x:Key="Warn" Color="#ffb020"/>
+    <SolidColorBrush x:Key="Err" Color="#ff4d6d"/>
+    <SolidColorBrush x:Key="Txt" Color="#c6d6ec"/>
+    <SolidColorBrush x:Key="Dim" Color="#4d5f80"/>
+    <SolidColorBrush x:Key="Dim2" Color="#2c3a54"/>
+    <SolidColorBrush x:Key="Line" Color="#141f33"/>
+    <SolidColorBrush x:Key="PanelLine" Color="#1a2c44"/>
+
+    <Style x:Key="Mono" TargetType="TextBlock">
+      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Microsoft YaHei UI"/>
+    </Style>
+
+    <Style x:Key="Lbl" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="9.5"/>
+      <Setter Property="Foreground" Value="#62809f"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <!-- 滚动条：贴合深色的细滚动条，去掉原生浅灰背景与上下箭头 -->
+    <Style x:Key="ThinScrollBar" TargetType="{x:Type ScrollBar}">
+      <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
+      <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Width" Value="9"/>
+      <Setter Property="MinWidth" Value="9"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="{x:Type ScrollBar}">
+            <Grid x:Name="Bg" Background="Transparent" SnapsToDevicePixels="True">
+              <Track x:Name="PART_Track" IsDirectionReversed="True"
+                     Width="9" HorizontalAlignment="Center">
+                <Track.DecreaseRepeatButton>
+                  <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Focusable="False">
+                    <RepeatButton.Template>
+                      <ControlTemplate TargetType="{x:Type RepeatButton}">
+                        <Border Background="Transparent"/>
+                      </ControlTemplate>
+                    </RepeatButton.Template>
+                  </RepeatButton>
+                </Track.DecreaseRepeatButton>
+                <Track.Thumb>
+                  <Thumb x:Name="Thumb" Width="9" Margin="0,2">
+                    <Thumb.Template>
+                      <ControlTemplate TargetType="{x:Type Thumb}">
+                        <Border x:Name="Bd" CornerRadius="4" Background="#2f6f86"
+                                BorderBrush="#3f8aa3" BorderThickness="1"/>
+                        <ControlTemplate.Triggers>
+                          <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="#4aa0bd"/>
+                          </Trigger>
+                          <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="#5cb6d4"/>
+                          </Trigger>
+                        </ControlTemplate.Triggers>
+                      </ControlTemplate>
+                    </Thumb.Template>
+                  </Thumb>
+                </Track.Thumb>
+                <Track.IncreaseRepeatButton>
+                  <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Focusable="False">
+                    <RepeatButton.Template>
+                      <ControlTemplate TargetType="{x:Type RepeatButton}">
+                        <Border Background="Transparent"/>
+                      </ControlTemplate>
+                    </RepeatButton.Template>
+                  </RepeatButton>
+                </Track.IncreaseRepeatButton>
+              </Track>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- 输入框 -->
+    <Style x:Key="Input" TargetType="TextBox">
+      <Setter Property="Height" Value="30"/>
+      <Setter Property="Background" Value="#0a0f1a"/>
+      <Setter Property="Foreground" Value="{StaticResource Txt}"/>
+      <Setter Property="CaretBrush" Value="{StaticResource Cyan}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="#1b3350"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Padding" Value="8,0"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="TextBox">
+            <Border x:Name="bd" Background="{TemplateBinding Background}"
+                    BorderBrush="#1c3350" BorderThickness="1" CornerRadius="5">
+              <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"
+                            VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Cyan}"/>
+                <Setter TargetName="bd" Property="Background" Value="#0c1420"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="Secret" TargetType="PasswordBox">
+      <Setter Property="Height" Value="30"/>
+      <Setter Property="Background" Value="#0a0f1a"/>
+      <Setter Property="Foreground" Value="{StaticResource Txt}"/>
+      <Setter Property="CaretBrush" Value="{StaticResource Cyan}"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Padding" Value="8,0"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="PasswordBox">
+            <Border x:Name="bd" Background="{TemplateBinding Background}"
+                    BorderBrush="#1c3350" BorderThickness="1" CornerRadius="5">
+              <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"
+                            VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Cyan}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- 主按钮 -->
+    <Style x:Key="Primary" TargetType="Button">
+      <Setter Property="Height" Value="38"/>
+      <Setter Property="Foreground" Value="#04121a"/>
+      <Setter Property="FontSize" Value="12.5"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Grid>
+              <Border x:Name="bd" CornerRadius="6">
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#00e5ff" Offset="0"/>
+                    <GradientStop Color="#5ceeff" Offset="0.58"/>
+                    <GradientStop Color="#7feaff" Offset="1"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+                <Border.Effect>
+                  <DropShadowEffect Color="#00e5ff" BlurRadius="20" ShadowDepth="0" Opacity="0.45"/>
+                </Border.Effect>
+              </Border>
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="bd" Property="Opacity" Value="0.9"/>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="bd" Property="Opacity" Value="0.3"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- 幽灵按钮 -->
+    <Style x:Key="Ghost" TargetType="Button">
+      <Setter Property="Height" Value="38"/>
+      <Setter Property="Foreground" Value="{StaticResource Dim}"/>
+      <Setter Property="FontSize" Value="12.5"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bd" Background="Transparent" BorderBrush="#1e3a56"
+                    BorderThickness="1" CornerRadius="6">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Cyan}"/>
+                <Setter Property="Foreground" Value="{StaticResource Cyan}"/>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="bd" Property="Opacity" Value="0.35"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- 小描边按钮 -->
+    <Style x:Key="Mini" TargetType="Button">
+      <Setter Property="Height" Value="24"/>
+      <Setter Property="Foreground" Value="{StaticResource Cyan}"/>
+      <Setter Property="FontSize" Value="10"/>
+      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Microsoft YaHei UI"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bd" Background="#0a1a24" BorderBrush="#1f4b5e"
+                    BorderThickness="1" CornerRadius="4" Padding="9,0">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="bd" Property="Background" Value="#0e2833"/>
+                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Cyan}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- 可选开关（自绘复选框，深色主题下才看得清） -->
+    <Style x:Key="Opt" TargetType="CheckBox">
+      <Setter Property="Foreground" Value="#8fb6d6"/>
+      <Setter Property="FontSize" Value="10.5"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="CheckBox">
+            <StackPanel Orientation="Horizontal" Background="Transparent">
+              <Border x:Name="box" Width="13" Height="13" CornerRadius="3"
+                      Background="#0a0f1a" BorderBrush="#1f3d55" BorderThickness="1"
+                      VerticalAlignment="Center">
+                <Path x:Name="tick" Data="M2.2 6.2 L5 9 L11 2.4" Stroke="#00e5ff"
+                      StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                      Visibility="Collapsed"/>
+              </Border>
+              <ContentPresenter Margin="7,0,0,0" VerticalAlignment="Center"/>
+            </StackPanel>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="tick" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="box" Property="BorderBrush" Value="#00e5ff"/>
+                <Setter TargetName="box" Property="Background" Value="#07242c"/>
+              </Trigger>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="box" Property="BorderBrush" Value="#2b8ea8"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- 窗口按钮 -->
+    <Style x:Key="WinBtn" TargetType="Button">
+      <Setter Property="Width" Value="30"/>
+      <Setter Property="Height" Value="26"/>
+      <Setter Property="Foreground" Value="{StaticResource Dim}"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bd" Background="Transparent" CornerRadius="4">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="bd" Property="Background" Value="#12202f"/>
+                <Setter Property="Foreground" Value="{StaticResource Cyan}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Window.Resources>
+
+  <Border BorderBrush="#101a2b" BorderThickness="1">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="56"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="116"/>
+      </Grid.RowDefinitions>
+
+      <!-- ============ 背景层：网格 / 角落光晕 / 扫描光 / 流动竖线 ============
+           全部 IsHitTestVisible=False，只是氛围，不承接任何交互 -->
+      <Grid Grid.RowSpan="3" IsHitTestVisible="False" ClipToBounds="True">
+
+        <!-- 44px 网格，向外多留 60px 让漂移动画不露边 -->
+        <Rectangle x:Name="BgGrid" Margin="-60" Opacity="0.55">
+          <Rectangle.Fill>
+            <DrawingBrush TileMode="Tile" Viewport="0,0,44,44" ViewportUnits="Absolute">
+              <DrawingBrush.Drawing>
+                <DrawingGroup>
+                  <GeometryDrawing Brush="#0700E5FF">
+                    <GeometryDrawing.Geometry>
+                      <RectangleGeometry Rect="0,0,44,1"/>
+                    </GeometryDrawing.Geometry>
+                  </GeometryDrawing>
+                  <GeometryDrawing Brush="#0700E5FF">
+                    <GeometryDrawing.Geometry>
+                      <RectangleGeometry Rect="0,0,1,44"/>
+                    </GeometryDrawing.Geometry>
+                  </GeometryDrawing>
+                </DrawingGroup>
+              </DrawingBrush.Drawing>
+            </DrawingBrush>
+          </Rectangle.Fill>
+          <Rectangle.RenderTransform>
+            <TranslateTransform x:Name="GridDrift"/>
+          </Rectangle.RenderTransform>
+        </Rectangle>
+
+        <!-- 左上 / 右下两团环境光（用径向渐变做柔光，避免 BlurEffect 的开销） -->
+        <Ellipse Width="520" Height="520" HorizontalAlignment="Left" VerticalAlignment="Top"
+                 Margin="-150,-190,0,0">
+          <Ellipse.Fill>
+            <RadialGradientBrush>
+              <GradientStop Color="#1A00E5FF" Offset="0"/>
+              <GradientStop Color="#0A00E5FF" Offset="0.55"/>
+              <GradientStop Color="#0000E5FF" Offset="1"/>
+            </RadialGradientBrush>
+          </Ellipse.Fill>
+        </Ellipse>
+        <Ellipse Width="560" Height="560" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                 Margin="0,0,-170,-230">
+          <Ellipse.Fill>
+            <RadialGradientBrush>
+              <GradientStop Color="#1400AAD2" Offset="0"/>
+              <GradientStop Color="#0600AAD2" Offset="0.55"/>
+              <GradientStop Color="#0000AAD2" Offset="1"/>
+            </RadialGradientBrush>
+          </Ellipse.Fill>
+        </Ellipse>
+
+        <!-- 自上而下缓慢扫过的光带 -->
+        <Rectangle x:Name="BgScan" Height="180" VerticalAlignment="Top">
+          <Rectangle.Fill>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+              <GradientStop Color="#0000E5FF" Offset="0"/>
+              <GradientStop Color="#0800E5FF" Offset="0.5"/>
+              <GradientStop Color="#0000E5FF" Offset="1"/>
+            </LinearGradientBrush>
+          </Rectangle.Fill>
+          <Rectangle.RenderTransform>
+            <TranslateTransform x:Name="ScanShift" Y="-220"/>
+          </Rectangle.RenderTransform>
+        </Rectangle>
+
+        <!-- 两条 1px 流动竖线 -->
+        <Rectangle x:Name="FlowA" Width="1" Height="140" HorizontalAlignment="Left"
+                   VerticalAlignment="Top" Margin="128,0,0,0">
+          <Rectangle.Fill>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+              <GradientStop Color="#0000E5FF" Offset="0"/>
+              <GradientStop Color="#4200E5FF" Offset="0.5"/>
+              <GradientStop Color="#0000E5FF" Offset="1"/>
+            </LinearGradientBrush>
+          </Rectangle.Fill>
+          <Rectangle.RenderTransform>
+            <TranslateTransform x:Name="FlowShiftA" Y="-160"/>
+          </Rectangle.RenderTransform>
+        </Rectangle>
+        <Rectangle x:Name="FlowB" Width="1" Height="140" HorizontalAlignment="Right"
+                   VerticalAlignment="Top" Margin="0,0,132,0">
+          <Rectangle.Fill>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+              <GradientStop Color="#0000E5FF" Offset="0"/>
+              <GradientStop Color="#4200E5FF" Offset="0.5"/>
+              <GradientStop Color="#0000E5FF" Offset="1"/>
+            </LinearGradientBrush>
+          </Rectangle.Fill>
+          <Rectangle.RenderTransform>
+            <TranslateTransform x:Name="FlowShiftB" Y="-160"/>
+          </Rectangle.RenderTransform>
+        </Rectangle>
+      </Grid>
+
+      <!-- ============ 顶栏 ============ -->
+      <Border x:Name="HeaderBar" Grid.Row="0" BorderBrush="#123041" BorderThickness="0,0,0,1">
+        <Border.Background>
+          <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#0A0F1B" Offset="0"/>
+            <GradientStop Color="#04070D" Offset="1"/>
+          </LinearGradientBrush>
+        </Border.Background>
+        <Grid Margin="20,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+
+          <Grid Grid.Column="0" Width="34" Height="34" VerticalAlignment="Center">
+            <Ellipse Stroke="#12455a" StrokeThickness="1"/>
+            <Ellipse Stroke="#00e5ff" StrokeThickness="1.4" StrokeDashArray="6 26" StrokeDashCap="Round">
+              <Ellipse.RenderTransform>
+                <RotateTransform x:Name="RingRotate" CenterX="17" CenterY="17"/>
+              </Ellipse.RenderTransform>
+            </Ellipse>
+            <Path Data="M17 4 L28 10.5 L28 23.5 L17 30 L6 23.5 L6 10.5 Z"
+                  Stroke="#00e5ff" StrokeThickness="1.3" Fill="#07141c" Stretch="None"/>
+            <Path Data="M11.5 12.5 L17 9.5 L22.5 12.5 L22.5 21.5 L17 24.5 L11.5 21.5 Z"
+                  Fill="#00e5ff" Opacity="0.85"/>
+          </Grid>
+
+          <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+            <TextBlock Text="数字花园 DEPLOYER" FontSize="14" FontWeight="SemiBold"
+                       Foreground="#eaf4ff"/>
+            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+              <TextBlock Text="OBSIDIAN BLOG" FontSize="9.5" VerticalAlignment="Center"
+                         FontFamily="Cascadia Mono, Consolas" Foreground="#5d87a8"/>
+              <TextBlock Text="·" FontSize="9.5" Margin="5,0" VerticalAlignment="Center"
+                         FontFamily="Cascadia Mono, Consolas" Foreground="#2f4f6b"/>
+              <!-- 开发者署名做成小徽章：有描边 + 青色文字，一眼能看到 -->
+              <Border Background="#0c2230" BorderBrush="#1d4f63" BorderThickness="1"
+                      CornerRadius="3" Padding="5,0,6,1">
+                <TextBlock FontSize="10" VerticalAlignment="Center">
+                  <Run Text="开发者" Foreground="#4fa8c4"/>
+                  <Run Text=" 论世先生" FontWeight="SemiBold" Foreground="#6fe8ff"/>
+                </TextBlock>
+              </Border>
+            </StackPanel>
+          </StackPanel>
+
+          <!-- 当前权限（原来那对 MODE/TARGET 谜语块换成了这一个能看懂的） -->
+          <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+            <Border Background="#0a1220" BorderBrush="#152539" BorderThickness="1" CornerRadius="4" Padding="9,3">
+              <StackPanel>
+                <TextBlock Text="运行权限" Style="{StaticResource Lbl}" FontSize="8"/>
+                <TextBlock x:Name="GaugeTarget" Text="普通用户" Style="{StaticResource Mono}"
+                           FontSize="10.5" Foreground="#6f8fae"
+                           ToolTip="普通权限下无法安装 Git / Obsidian；点「开始部署」时可选择提权重启"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+            <Border x:Name="StatusPill" Background="#0a1220" BorderBrush="#152539" BorderThickness="1"
+                    CornerRadius="9" Padding="9,3" Margin="0,0,10,0">
+              <StackPanel Orientation="Horizontal">
+                <Ellipse x:Name="StatusDot" Width="7" Height="7" Fill="#2c3a54" VerticalAlignment="Center"/>
+                <TextBlock x:Name="StatusText" Text="就绪" Margin="6,0,0,0" FontSize="11"
+                           Foreground="#6f8fae" VerticalAlignment="Center"/>
+              </StackPanel>
+            </Border>
+            <Button x:Name="BtnMin" Style="{StaticResource WinBtn}" Content="—" ToolTip="最小化"/>
+            <Button x:Name="BtnClose" Style="{StaticResource WinBtn}" Content="✕" ToolTip="关闭"/>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- ============ 主体 ============ -->
+      <Grid Grid.Row="1">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="1*"/>
+          <ColumnDefinition Width="1.06*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 内容区半透明压底：必须在属性元素之后，否则 XAML 报 Children 重复设置 -->
+        <Rectangle Grid.ColumnSpan="2" Fill="#CC050911" IsHitTestVisible="False"/>
+
+        <!-- 左栏 -->
+        <Border Grid.Column="0" BorderBrush="#131f31" BorderThickness="0,0,1,0">
+          <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="22,16,14,12">
+            <ScrollViewer.Resources>
+              <Style TargetType="ScrollBar" BasedOn="{StaticResource ThinScrollBar}"/>
+            </ScrollViewer.Resources>
+            <StackPanel>
+              <TextBlock x:Name="HeroTitle" FontSize="18" FontWeight="SemiBold" LineHeight="24">
+                <TextBlock.Foreground>
+                  <!-- 标题静态渐变：沿用最初那版的配色（白 → 浅青 → 青），对角方向 -->
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#ffffff" Offset="0"/>
+                    <GradientStop Color="#a9e6ff" Offset="0.48"/>
+                    <GradientStop Color="#00e5ff" Offset="1"/>
+                  </LinearGradientBrush>
+                </TextBlock.Foreground>
+                <Run Text="把 Obsidian 笔记"/>
+                <LineBreak/>
+                <Run Text="变成一座在线花园"/>
+              </TextBlock>
+
+              <TextBlock Margin="0,5,0,0" FontSize="10.5" Foreground="#4d5f80" LineHeight="17"
+                         TextWrapping="Wrap">
+                自动检测并安装 Git / Obsidian（Node 可选），创建仓库、推送代码、装好插件。
+                全程无需命令行。
+              </TextBlock>
+
+              <!-- 部署位置 -->
+              <TextBlock Text="部署位置" Style="{StaticResource Lbl}" Margin="0,10,0,5"/>
+              <Border Background="#0b1220" BorderBrush="#1c3350" BorderThickness="1" CornerRadius="5" Padding="9,5">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <Path Grid.Column="0" Data="M2 5 L7 5 L9 7 L16 7 L16 15 L2 15 Z"
+                        Stroke="#2b6a7d" StrokeThickness="1.1"
+                        Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                  <TextBox x:Name="TxtPath" Grid.Column="1" Text="D:\GardenBlog" Margin="8,0"
+                           FontFamily="Cascadia Mono, Consolas, Microsoft YaHei UI" FontSize="11"
+                           Foreground="#8fb6d6" Background="Transparent" BorderThickness="0"
+                           Padding="0" VerticalContentAlignment="Center" CaretBrush="#00e5ff"
+                           ToolTip="可以直接输入或粘贴路径"/>
+                  <Button x:Name="BtnBrowse" Grid.Column="2" Style="{StaticResource Mini}" Content="浏览…"/>
+                </Grid>
+              </Border>
+
+              <!-- 仓库名 + 访问令牌（用户名由令牌自动识别，不再单独填） -->
+              <Grid Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="0.82*"/>
+                  <ColumnDefinition Width="12"/>
+                  <ColumnDefinition Width="1.18*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="仓库名" Style="{StaticResource Lbl}" Margin="0,0,0,6"/>
+                  <TextBox x:Name="TxtRepo" Style="{StaticResource Input}" Text="my-garden"
+                           ToolTip="在 GitHub 上创建的仓库名，已存在则直接使用"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <TextBlock Text="访问令牌 (PAT)" Style="{StaticResource Lbl}" VerticalAlignment="Center"/>
+                    <!-- 只放一条最短的决策提示，细节在悬停提示和 README 里 -->
+                    <TextBlock Text="  有效期建议 90 天" FontSize="9" Foreground="#3f5a75"
+                               VerticalAlignment="Center"/>
+                  </StackPanel>
+                  <!-- 按钮与输入框同一行、同高，不再压在上方标签行里 -->
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <PasswordBox x:Name="TxtToken" Grid.Column="0" Style="{StaticResource Secret}"
+                                 ToolTip="需要勾选 repo + workflow 权限；有效期建议 90 天（默认只有 30 天，且不建议选「无有效期」）。&#x0a;令牌过期后推送会报 401：重新创建一个，并删掉 控制面板 → 凭据管理器 里的 git:https://github.com"/>
+                    <Button x:Name="BtnToken" Grid.Column="1" Style="{StaticResource Mini}"
+                            Content="去创建" Margin="6,0,0,0" Padding="7,0" FontSize="9.5"
+                            VerticalAlignment="Stretch" Height="Auto"
+                            ToolTip="打开 GitHub 令牌创建页（已预填 repo + workflow 权限）"/>
+                  </Grid>
+                </StackPanel>
+              </Grid>
+
+              <!-- Node.js：默认不装（云端构建），勾上才装，用于本地预览 -->
+              <CheckBox x:Name="ChkNode" Style="{StaticResource Opt}" Margin="0,10,0,0"
+                        ToolTip="不勾也能正常部署：站点由 GitHub Actions 在推送后构建">
+                <TextBlock>
+                  <Run Text="顺便安装 Node.js" Foreground="#8fb6d6"/>
+                  <Run Text="  不勾也能发布，只是没法本地预览" Foreground="#3f5a75" FontSize="9.5"/>
+                </TextBlock>
+              </CheckBox>
+
+              <!-- 步骤 -->
+              <TextBlock Text="部署流程" Style="{StaticResource Lbl}" Margin="0,8,0,4"/>
+
+              <Grid x:Name="S0" Height="36">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="18"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Ellipse x:Name="S0Dot" Grid.Column="0" Width="15" Height="15" Stroke="#2c3a54"
+                         StrokeThickness="1" Fill="#060a13" VerticalAlignment="Top" Margin="0,3,0,0"/>
+                <Rectangle x:Name="S0Rail" Grid.Column="0" Width="1" Height="18" Fill="#1a2f45"
+                           VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="S0Mark" Grid.Column="0" Text="1" FontSize="9"
+                           FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
+                           HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
+                           Foreground="#3f5a75"/>
+                <StackPanel Grid.Column="1" Margin="9,0,0,0">
+                  <TextBlock x:Name="S0Name" Text="环境检测" FontSize="13.5" Foreground="#8fb0cf"/>
+                  <TextBlock x:Name="S0Sub" Text="系统版本 · 磁盘空间 · 网络" FontSize="10.5"
+                             Foreground="#5a7d9e" Margin="0,2,0,0"/>
+                </StackPanel>
+              </Grid>
+
+              <Grid x:Name="S1" Height="36">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="18"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Ellipse x:Name="S1Dot" Grid.Column="0" Width="15" Height="15" Stroke="#2c3a54"
+                         StrokeThickness="1" Fill="#060a13" VerticalAlignment="Top" Margin="0,3,0,0"/>
+                <Rectangle x:Name="S1Rail" Grid.Column="0" Width="1" Height="18" Fill="#1a2f45"
+                           VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="S1Mark" Grid.Column="0" Text="2" FontSize="9"
+                           FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
+                           HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
+                           Foreground="#3f5a75"/>
+                <StackPanel Grid.Column="1" Margin="9,0,0,0">
+                  <TextBlock x:Name="S1Name" Text="准备部署目录" FontSize="13.5" Foreground="#8fb0cf"/>
+                  <TextBlock x:Name="S1Sub" Text="复制站点模板与插件" FontSize="10.5"
+                             Foreground="#5a7d9e" Margin="0,2,0,0"/>
+                </StackPanel>
+              </Grid>
+
+              <Grid x:Name="S2" Height="36">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="18"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Ellipse x:Name="S2Dot" Grid.Column="0" Width="15" Height="15" Stroke="#2c3a54"
+                         StrokeThickness="1" Fill="#060a13" VerticalAlignment="Top" Margin="0,3,0,0"/>
+                <Rectangle x:Name="S2Rail" Grid.Column="0" Width="1" Height="18" Fill="#1a2f45"
+                           VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="S2Mark" Grid.Column="0" Text="3" FontSize="9"
+                           FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
+                           HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
+                           Foreground="#3f5a75"/>
+                <StackPanel Grid.Column="1" Margin="9,0,0,0">
+                  <TextBlock x:Name="S2Name" Text="安装 Git" FontSize="13.5" Foreground="#8fb0cf"/>
+                  <TextBlock x:Name="S2Sub" Text="缺失时自动下载安装" FontSize="10.5"
+                             Foreground="#5a7d9e" Margin="0,2,0,0"/>
+                </StackPanel>
+              </Grid>
+
+              <Grid x:Name="S3" Height="36">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="18"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Ellipse x:Name="S3Dot" Grid.Column="0" Width="15" Height="15" Stroke="#2c3a54"
+                         StrokeThickness="1" Fill="#060a13" VerticalAlignment="Top" Margin="0,3,0,0"/>
+                <Rectangle x:Name="S3Rail" Grid.Column="0" Width="1" Height="18" Fill="#1a2f45"
+                           VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="S3Mark" Grid.Column="0" Text="4" FontSize="9"
+                           FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
+                           HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
+                           Foreground="#3f5a75"/>
+                <StackPanel Grid.Column="1" Margin="9,0,0,0">
+                  <TextBlock x:Name="S3Name" Text="构建站点" FontSize="13.5" Foreground="#8fb0cf"/>
+                  <TextBlock x:Name="S3Sub" Text="node src/build.js" FontSize="10.5"
+                             FontFamily="Cascadia Mono, Consolas" Foreground="#5a7d9e" Margin="0,2,0,0"/>
+                </StackPanel>
+              </Grid>
+
+              <Grid x:Name="S4" Height="36">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="18"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Ellipse x:Name="S4Dot" Grid.Column="0" Width="15" Height="15" Stroke="#2c3a54"
+                         StrokeThickness="1" Fill="#060a13" VerticalAlignment="Top" Margin="0,3,0,0"/>
+                <Rectangle x:Name="S4Rail" Grid.Column="0" Width="1" Height="18" Fill="#1a2f45"
+                           VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="S4Mark" Grid.Column="0" Text="5" FontSize="9"
+                           FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
+                           HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
+                           Foreground="#3f5a75"/>
+                <StackPanel Grid.Column="1" Margin="9,0,0,0">
+                  <TextBlock x:Name="S4Name" Text="创建仓库并推送" FontSize="13.5" Foreground="#8fb0cf"/>
+                  <TextBlock x:Name="S4Sub" Text="GitHub API · 自动开启 Pages" FontSize="10.5"
+                             FontFamily="Cascadia Mono, Consolas" Foreground="#5a7d9e" Margin="0,2,0,0"/>
+                </StackPanel>
+              </Grid>
+
+              <Grid x:Name="S5" Height="36">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="18"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Ellipse x:Name="S5Dot" Grid.Column="0" Width="15" Height="15" Stroke="#2c3a54"
+                         StrokeThickness="1" Fill="#060a13" VerticalAlignment="Top" Margin="0,3,0,0"/>
+                <TextBlock x:Name="S5Mark" Grid.Column="0" Text="6" FontSize="9"
+                           FontFamily="Cascadia Mono, Consolas" IsHitTestVisible="False"
+                           HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0"
+                           Foreground="#3f5a75"/>
+                <StackPanel Grid.Column="1" Margin="9,0,0,0">
+                  <TextBlock x:Name="S5Name" Text="安装 Obsidian 与插件" FontSize="13.5" Foreground="#8fb0cf"/>
+                  <TextBlock x:Name="S5Sub" Text="预配置上传路径并启用插件" FontSize="10.5"
+                             Foreground="#5a7d9e" Margin="0,2,0,0"/>
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+          </ScrollViewer>
+        </Border>
+
+        <!-- 右栏 -->
+        <Grid Grid.Column="1">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+
+          <!-- 环境面板 -->
+          <Border Grid.Row="0" Margin="18,18,18,0" Background="#080d17" BorderBrush="#16283c"
+                  BorderThickness="1" CornerRadius="6" Padding="12,10">
+            <StackPanel>
+              <Grid Margin="0,0,0,7">
+                <TextBlock Text="环境" Style="{StaticResource Lbl}" VerticalAlignment="Center"/>
+                <Button x:Name="BtnRefresh" HorizontalAlignment="Right" Style="{StaticResource Mini}"
+                        Content="重新检测" Height="20" FontSize="9.5"/>
+              </Grid>
+
+              <Grid Margin="0,3">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="12"/>
+                  <ColumnDefinition Width="62"/>
+                  <ColumnDefinition Width="78"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Ellipse x:Name="EnvNodeDot" Grid.Column="0" Width="6" Height="6" Fill="#2c3a54" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="Node" Style="{StaticResource Mono}" FontSize="11" Foreground="#8fb6d6" VerticalAlignment="Center"/>
+                <TextBlock x:Name="EnvNodeVer" Grid.Column="2" Text="—" Style="{StaticResource Mono}" FontSize="10.5" Foreground="#4d5f80" VerticalAlignment="Center"/>
+                <TextBlock x:Name="EnvNodePath" Grid.Column="3" Text="" Style="{StaticResource Mono}" FontSize="10" Foreground="#2f4256" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+              </Grid>
+
+              <Grid Margin="0,3">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="12"/>
+                  <ColumnDefinition Width="62"/>
+                  <ColumnDefinition Width="78"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Ellipse x:Name="EnvGitDot" Grid.Column="0" Width="6" Height="6" Fill="#2c3a54" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="Git" Style="{StaticResource Mono}" FontSize="11" Foreground="#8fb6d6" VerticalAlignment="Center"/>
+                <TextBlock x:Name="EnvGitVer" Grid.Column="2" Text="—" Style="{StaticResource Mono}" FontSize="10.5" Foreground="#4d5f80" VerticalAlignment="Center"/>
+                <TextBlock x:Name="EnvGitPath" Grid.Column="3" Text="" Style="{StaticResource Mono}" FontSize="10" Foreground="#2f4256" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+              </Grid>
+
+              <Grid Margin="0,3">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="12"/>
+                  <ColumnDefinition Width="62"/>
+                  <ColumnDefinition Width="78"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Ellipse x:Name="EnvObsDot" Grid.Column="0" Width="6" Height="6" Fill="#2c3a54" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="Obsidian" Style="{StaticResource Mono}" FontSize="11" Foreground="#8fb6d6" VerticalAlignment="Center"/>
+                <TextBlock x:Name="EnvObsVer" Grid.Column="2" Text="—" Style="{StaticResource Mono}" FontSize="10.5" Foreground="#4d5f80" VerticalAlignment="Center"/>
+                <TextBlock x:Name="EnvObsPath" Grid.Column="3" Text="" Style="{StaticResource Mono}" FontSize="10" Foreground="#2f4256" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <!-- 日志终端 -->
+          <Grid Grid.Row="1" Margin="18,12,18,16">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,6">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <TextBlock Text="日志" Style="{StaticResource Lbl}" VerticalAlignment="Center"/>
+              <Rectangle Grid.Column="1" Height="1" Margin="10,0" VerticalAlignment="Center">
+                <Rectangle.Fill>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#1a3048" Offset="0"/>
+                    <GradientStop Color="#0a1018" Offset="1"/>
+                  </LinearGradientBrush>
+                </Rectangle.Fill>
+              </Rectangle>
+              <Button x:Name="BtnClearLog" Grid.Column="2" Style="{StaticResource Mini}"
+                      Content="清空" Height="20" FontSize="9.5"/>
+            </Grid>
+
+            <Border Grid.Row="1" Background="#03060c" BorderBrush="#0E2A38" BorderThickness="1" CornerRadius="6">
+              <Grid>
+                <ScrollViewer x:Name="LogScroll" VerticalScrollBarVisibility="Auto" Padding="12,10">
+                  <ScrollViewer.Resources>
+                    <Style TargetType="ScrollBar" BasedOn="{StaticResource ThinScrollBar}"/>
+                  </ScrollViewer.Resources>
+                  <StackPanel x:Name="LogHost"/>
+                </ScrollViewer>
+                <!-- CRT 暗角：中心透明、边缘压暗，模拟显像管屏幕 -->
+                <Rectangle IsHitTestVisible="False" RadiusX="6" RadiusY="6">
+                  <Rectangle.Fill>
+                    <RadialGradientBrush>
+                      <GradientStop Color="#00000000" Offset="0"/>
+                      <GradientStop Color="#00000000" Offset="0.62"/>
+                      <GradientStop Color="#59101628" Offset="1"/>
+                    </RadialGradientBrush>
+                  </Rectangle.Fill>
+                </Rectangle>
+              </Grid>
+            </Border>
+          </Grid>
+        </Grid>
+      </Grid>
+
+      <!-- ============ 底栏 ============ -->
+      <Border Grid.Row="2" BorderBrush="#123041" BorderThickness="0,1,0,0">
+        <Border.Background>
+          <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#04070D" Offset="0"/>
+            <GradientStop Color="#080D17" Offset="1"/>
+          </LinearGradientBrush>
+        </Border.Background>
+        <Grid Margin="24,10,24,10">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+
+          <Grid Grid.Row="0" Margin="0,0,0,6">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="STATUS" Style="{StaticResource Lbl}" VerticalAlignment="Center"/>
+              <TextBlock x:Name="PhaseText" Text="等待开始" Margin="9,0,0,0" FontSize="11.5"
+                         Foreground="#7f9dc0" VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock x:Name="PctText" Text="0%" HorizontalAlignment="Right" VerticalAlignment="Center"
+                       FontFamily="Cascadia Mono, Consolas" FontSize="16" FontWeight="SemiBold"
+                       Foreground="#00e5ff"/>
+          </Grid>
+
+          <Border Grid.Row="1" Height="7" CornerRadius="4" Background="#0d1626"
+                  BorderBrush="#16293c" BorderThickness="1" Margin="0,0,0,8">
+            <Grid x:Name="BarTrack" ClipToBounds="True">
+              <Border x:Name="BarFill" HorizontalAlignment="Left" CornerRadius="3" Width="0">
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#0a7d92" Offset="0"/>
+                    <GradientStop Color="#00e5ff" Offset="0.55"/>
+                    <GradientStop Color="#7feaff" Offset="1"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <Rectangle x:Name="BarGlow" Width="78" HorizontalAlignment="Left" IsHitTestVisible="False">
+                <Rectangle.Fill>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#00FFFFFF" Offset="0"/>
+                    <GradientStop Color="#55FFFFFF" Offset="0.5"/>
+                    <GradientStop Color="#00FFFFFF" Offset="1"/>
+                  </LinearGradientBrush>
+                </Rectangle.Fill>
+              </Rectangle>
+            </Grid>
+          </Border>
+
+          <Grid Grid.Row="2">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+              <Button x:Name="BtnStart" Style="{StaticResource Primary}" Content="开始部署" Width="128"/>
+              <Button x:Name="BtnOpen" Style="{StaticResource Ghost}" Content="打开站点" Width="100" Margin="10,0,0,0"/>
+              <Button x:Name="BtnQuit" Style="{StaticResource Ghost}" Content="退出" Width="76" Margin="10,0,0,0"/>
+            </StackPanel>
+            <TextBlock x:Name="HintText" HorizontalAlignment="Right" VerticalAlignment="Center"
+                       FontSize="10.5" Foreground="#2f4256" TextAlignment="Right"
+                       Text="部署会修改目标目录并调用系统安装程序，请关闭正在运行的 Obsidian"/>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <!-- 顶栏下沿的扫描光带（填充与动画在代码里创建） -->
+      <Rectangle x:Name="TopScan" Grid.Row="0" Height="2" VerticalAlignment="Bottom"
+                 IsHitTestVisible="False" Opacity="0.55"/>
+    </Grid>
+  </Border>
+</Window>

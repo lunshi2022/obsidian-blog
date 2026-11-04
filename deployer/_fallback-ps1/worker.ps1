@@ -718,7 +718,7 @@ $($Script:PagesUrl)
 
 写完想更新？再点一次上传即可，同名会覆盖。
 
-支持的写法：[[开始使用]]、![[图片.png]]、Callout、表格、任务列表。
+支持的写法：[[开始使用]]、`![[图片.png]]`、Callout、表格、任务列表。
 "@
     Write-TextFile $readme $txt
     Log '  已生成示例笔记：content\开始写作.md'

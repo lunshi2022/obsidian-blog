@@ -1276,7 +1276,7 @@ namespace GardenDeployer
                     + "这是你的第一篇笔记。左侧边栏点 ↑ 图标（或右键笔记选「上传到博客」），就会把它发布到\n"
                     + (PagesUrl.Length > 0 ? PagesUrl : "你的站点") + "\n\n"
                     + "写完想更新？再点一次上传即可，同名会覆盖。\n\n"
-                    + "支持的写法：[[开始使用]]、![[图片.png]]、Callout、表格、任务列表。\n";
+                    + "支持的写法：[[开始使用]]、`![[图片.png]]`、Callout、表格、任务列表。\n";
                 WriteText(note, txt);
                 Log("", "  已生成示例笔记：content\\开始写作.md");
             }

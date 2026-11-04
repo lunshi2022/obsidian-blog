@@ -100,10 +100,67 @@ function hasMath(body) {
   return /\$\$[\s\S]+?\$\$|\$[^$\n]{1,240}\$/.test(stripped);
 }
 
+/* ------------------------------------------------------------------ 配色主题 */
+
+// 内置主题：garden 为默认（assets/style.css 里的原始变量），其余主题只覆盖颜色变量。
+// 想加新主题：在这里加一组变量，或在 site.config.json 里把 theme 设为对应名字。
+const THEMES = {
+  garden: null,   // 青绿·纸感（默认）
+  ink: {          // 墨蓝·清冷
+    light: {
+      '--bg': '#f5f7fb', '--bg-elev': '#ffffff',
+      '--border': '#e0e5ee', '--border-soft': '#eaedf4',
+      '--accent': '#2f5fca', '--accent-hover': '#24489f',
+      '--accent-soft': 'rgba(47,95,202,.08)',
+      '--code-bg': '#eef1f8', '--mark': '#cfe0ff',
+    },
+    dark: {
+      '--bg': '#0f1218', '--bg-elev': '#161b26',
+      '--border': '#232a36', '--border-soft': '#1c2230',
+      '--accent': '#7da4ff', '--accent-hover': '#9dbcff',
+      '--accent-soft': 'rgba(125,164,255,.12)',
+      '--code-bg': '#161b26', '--mark': '#274069',
+    },
+  },
+  dawn: {         // 暖阳·奶油
+    light: {
+      '--bg': '#fdf8f2', '--bg-elev': '#ffffff',
+      '--border': '#f0e4d6', '--border-soft': '#f5ede1',
+      '--accent': '#c2622a', '--accent-hover': '#a04d1d',
+      '--accent-soft': 'rgba(194,98,42,.08)',
+      '--code-bg': '#f8efe4', '--mark': '#ffe3a6',
+    },
+    dark: {
+      '--bg': '#171310', '--bg-elev': '#1e1915',
+      '--border': '#2b241d', '--border-soft': '#231e18',
+      '--accent': '#f0a05a', '--accent-hover': '#f6b878',
+      '--accent-soft': 'rgba(240,160,90,.12)',
+      '--code-bg': '#221c16', '--mark': '#5c4a24',
+    },
+  },
+};
+
+// 按配置生成主题覆盖 CSS（一段内联 <style>），未知主题回退默认并提示
+function buildThemeCss(config) {
+  const name = String(config.theme || 'garden').trim().toLowerCase();
+  const theme = THEMES[name];
+  if (name !== 'garden' && !theme) {
+    console.warn(`[warn] 未知主题 "${name}"，可选：${Object.keys(THEMES).join(' / ')}。已回退默认。`);
+    return '';
+  }
+  if (!theme) return '';
+  const body = (sel, vars) =>
+    sel + '{' + Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(';') + '}';
+  return `<style id="theme-override">`
+    + body(':root', theme.light) + body('[data-theme="dark"]', theme.dark)
+    + `</style>`;
+}
+
 /* ------------------------------------------------------------------ 读取笔记 */
 
 function buildSite(opts = {}) {
   const config = loadConfig();
+  config.themeCss = buildThemeCss(config);
   const t0 = Date.now();
 
   rmrf(OUT);

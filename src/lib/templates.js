@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <meta property="og:title" content="${fullTitle}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:type" content="${pageType === 'note' ? 'article' : 'website'}">
-<link rel="stylesheet" href="${root}assets/style.css">
+<link rel="stylesheet" href="${root}assets/style.css">${site.themeCss || ''}
 <link rel="icon" href="${root}assets/favicon.svg" type="image/svg+xml">${mathTags}
 </head>
 <body data-root="${root}" data-page="${pageType}">

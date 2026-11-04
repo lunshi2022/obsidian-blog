@@ -1207,11 +1207,16 @@ namespace GardenDeployer
                 if (!installed && !InstallViaWinget("Obsidian.Obsidian", "Obsidian", 5, 10, 50))
                 {
                     Log("warn", "  Obsidian 自动安装失败，请手动安装后再打开笔记库（笔记与插件仍会写入部署目录）");
+                    Log("cmd", "  下载地址：https://github.com/obsidianmd/obsidian-releases/releases");
                 }
                 Env.UpdateSessionPath();
                 obs = Env.FindObsidian();
                 if (obs.Ok) Log("ok", "  Obsidian 就绪：" + obs.Version);
-                else Log("warn", "  Obsidian 未检测到，请手动安装后把插件复制进库");
+                else
+                {
+                    Log("warn", "  Obsidian 未检测到，请手动安装后把插件复制进库");
+                    Log("cmd", "  下载地址：https://github.com/obsidianmd/obsidian-releases/releases");
+                }
             }
             else Log("ok", "  Obsidian 已安装：" + obs.Version);
 

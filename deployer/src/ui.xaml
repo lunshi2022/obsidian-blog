@@ -872,6 +872,7 @@
             </StackPanel>
             <TextBlock x:Name="HintText" HorizontalAlignment="Right" VerticalAlignment="Center"
                        FontSize="10.5" Foreground="#2f4256" TextAlignment="Right"
+                       MaxWidth="440" TextWrapping="Wrap" LineHeight="15"
                        Text="部署会修改目标目录并调用系统安装程序，请关闭正在运行的 Obsidian"/>
           </Grid>
         </Grid>

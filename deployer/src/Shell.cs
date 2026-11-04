@@ -48,7 +48,7 @@ namespace GardenDeployer
                 "EnvObsDot", "EnvObsVer", "EnvObsPath", "BtnRefresh",
                 "LogHost", "LogScroll", "BtnClearLog",
                 "BarFill", "BarGlow", "BarTrack", "PctText", "PhaseText",
-                "BtnStart", "BtnOpen", "BtnQuit", "HintText", "GaugeTarget", "RingRotate", "ChkNode",
+                "BtnStart", "BtnOpen", "BtnUpdate", "BtnQuit", "HintText", "GaugeTarget", "RingRotate", "ChkNode",
                 "HeroTitle", "TopScan",
                 "BgGrid", "GridDrift", "BgScan", "ScanShift", "FlowA", "FlowB", "FlowShiftA", "FlowShiftB"
             };
@@ -66,6 +66,17 @@ namespace GardenDeployer
             Wire();
             CheckControls();
             Init();
+
+            // 小屏/高 DPI 缩放时窗口会比工作区大，右侧（按钮栏）会被屏幕边缘裁掉：
+            // 启动时把窗口钳制到工作区内
+            try
+            {
+                double maxW = SystemParameters.WorkArea.Width - 24;
+                double maxH = SystemParameters.WorkArea.Height - 24;
+                if (W.Width > maxW) W.Width = Math.Floor(maxW);
+                if (W.Height > maxH) W.Height = Math.Floor(maxH);
+            }
+            catch { }
 
             // 窗口真正显示出来后再自动开始（提权重启后走这条路）
             W.Loaded += delegate
@@ -860,6 +871,28 @@ namespace GardenDeployer
                 if (hint != null) hint.Text = "站点正在构建中，通常需要几分钟才能打开（首次部署可能更久，请稍候再点「打开我的网站」）";
                 AddLog("", "现在就能改笔记：Obsidian 里点左侧 ↑ 图标上传，或右键笔记「上传到博客」");
                 AddLog("", "想先看效果（需本机装了 Node）：Obsidian 命令面板 →「本地预览（构建并打开浏览器）」");
+
+                // Obsidian 若最终没装上，在完成汇总里明确提醒，避免用户以为一切就绪
+                if (currentTarget != null && currentTarget.Length > 0)
+                {
+                    string vault = currentTarget;
+                    Thread ct = new Thread(delegate()
+                    {
+                        Tool obs2 = null;
+                        try { Env.UpdateSessionPath(); obs2 = Env.FindObsidian(); } catch { }
+                        Post(delegate
+                        {
+                            if (obs2 == null || !obs2.Ok)
+                            {
+                                AddLog("warn", "提醒：Obsidian 未安装成功，笔记已在本地，手动装好即可继续写作");
+                                AddLog("cmd", "  下载地址：https://github.com/obsidianmd/obsidian-releases/releases");
+                                AddLog("", "  安装后用 Obsidian 的「打开文件夹作为仓库」选择：" + vault);
+                            }
+                        });
+                    });
+                    ct.IsBackground = true;
+                    ct.Start();
+                }
             }
             else
             {
@@ -899,7 +932,7 @@ namespace GardenDeployer
             tb.Margin = new Thickness(0, 1, 0, 1);
 
             Run r1 = new Run("[" + DateTime.Now.ToString("HH:mm:ss") + "] ");
-            r1.Foreground = Ui.B("#2c3a54");
+            r1.Foreground = Ui.B("#5e7a9e");
             // 在路径分隔符后插入零宽空格，避免超长路径（如插件目录）从中间被硬劈断行
             Run r2 = new Run(text.Replace("\\", "\\\u200B").Replace("/", "/\u200B"));
             r2.Foreground = LogBrush(cls);

@@ -31,11 +31,16 @@ foreach ($d in @('src', 'assets', 'content', 'blog-uploader', '.github')) {
   if (Test-Path $src) { Copy-Item -LiteralPath $src -Destination (Join-Path $stage $d) -Recurse -Force }
 }
 
-# files at repo root
-foreach ($f in @('site.config.json', 'package.json', '.gitignore', 'README.md')) {
+# files at repo root（README 单独处理：用户仓库里放「你的博客仓库」说明，而不是项目介绍）
+foreach ($f in @('site.config.json', 'package.json', '.gitignore')) {
   $p = Join-Path $Root $f
   if (Test-Path $p) { Copy-Item -LiteralPath $p -Destination (Join-Path $stage $f) -Force }
 }
+
+# 用户博客仓库 / 笔记库用的 README（docs/vault-README.md），缺失时退回项目 README
+$vaultReadme = Join-Path $Root 'docs\vault-README.md'
+$readmeSrc = if (Test-Path $vaultReadme) { $vaultReadme } else { Join-Path $Root 'README.md' }
+if (Test-Path $readmeSrc) { Copy-Item -LiteralPath $readmeSrc -Destination (Join-Path $stage 'README.md') -Force }
 
 # user blog repos don't need the deployer's own release workflow
 $rel = Join-Path (Join-Path $stage '.github') 'workflows\release.yml'

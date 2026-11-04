@@ -442,6 +442,38 @@ namespace GardenDeployer
         static readonly string[] ThemeIds = { "garden", "ink", "dawn" };
         static readonly string[] ThemeNames = { "青绿", "墨蓝", "暖阳" };
 
+        static string ThemeAfter(string id)
+        {
+            int i = Array.IndexOf(ThemeIds, id);
+            if (i < 0) i = 0;
+            return ThemeIds[(i + 1) % ThemeIds.Length];
+        }
+
+        static string ThemeNameOf(string id)
+        {
+            int i = Array.IndexOf(ThemeIds, id);
+            return i >= 0 ? ThemeNames[i] : ThemeNames[0];
+        }
+
+        /// <summary>按笔记库当前配置刷新底栏主题按钮：按钮上显示的是「下一个」主题</summary>
+        void RefreshThemeLabel()
+        {
+            Button btn = G<Button>("BtnTheme");
+            if (btn == null) return;
+            try
+            {
+                string target = currentTarget.Length > 0 ? currentTarget : G<TextBox>("TxtPath").Text.Trim();
+                string cfgPath = Path.Combine(target, "site.config.json");
+                if (!File.Exists(cfgPath)) return;
+                Match cm = Regex.Match(File.ReadAllText(cfgPath), "\"theme\"\s*:\s*\"([^\"]*)\"");
+                string cur = cm.Success ? cm.Groups[1].Value.ToLower() : "garden";
+                string nxt = ThemeAfter(cur);
+                btn.Content = "主题→" + ThemeNameOf(nxt);
+                btn.ToolTip = "当前配色：" + ThemeNameOf(cur) + "。点击切换为「" + ThemeNameOf(nxt) + "」并自动推送";
+            }
+            catch { }
+        }
+
         /// <summary>循环切换站点配色：改 site.config.json 后自动提交推送，Actions 自动重建</summary>
         void CycleTheme(Button btn)
         {
@@ -522,9 +554,12 @@ namespace GardenDeployer
                 Post(delegate
                 {
                     btn.IsEnabled = true;
-                    btn.Content = "主题：" + newName;
+                    if (pcode == 0) RefreshThemeLabel();
                     if (pcode == 0)
+                    {
                         AddLog("ok", "主题已切换为「" + newName + "」，GitHub 构建中，几分钟后网站自动换装");
+                        AddLog("", "  提示：Pages 页面缓存约 10 分钟，若各页面颜色暂时不一致属正常，稍后刷新或按 Ctrl+F5 即可统一");
+                    }
                     else
                     {
                         AddLog("err", "推送失败：" + GitErrLine(outp));
@@ -572,6 +607,7 @@ namespace GardenDeployer
             SetBar(0, "等待开始");
             SetStatus("就绪", "#2c3a54");
 
+            RefreshThemeLabel();
             AddLog("hi", "数字花园部署器已就绪");
             AddLog("", "流程：填好目录与令牌 → 点「开始部署」→ 完成后点「打开站点」");
             if (!IsAdmin()) AddLog("warn", "当前不是管理员权限，安装 Git/Obsidian 时可能失败");
@@ -1022,6 +1058,7 @@ namespace GardenDeployer
 
             // 刚装好的 Git/Node/Obsidian 要让面板立刻反映出来，不然还显示「未安装」
             RefreshEnvQuiet();
+            RefreshThemeLabel();
         }
 
         // ---------------------------------------------------------------- 界面更新

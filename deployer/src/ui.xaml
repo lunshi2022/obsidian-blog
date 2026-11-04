@@ -5,7 +5,7 @@
        
         x:Name="Root"
         Title="数字花园 DEPLOYER"
-        Width="1064" Height="700"
+        Width="1200" Height="740"
         WindowStyle="None" ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen"
         Background="#05070e"
@@ -491,7 +491,7 @@
 
         <!-- 左栏 -->
         <Border Grid.Column="0" BorderBrush="#131f31" BorderThickness="0,0,1,0">
-          <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="22,16,14,12">
+          <ScrollViewer VerticalScrollBarVisibility="Hidden" Padding="22,16,14,12">
             <ScrollViewer.Resources>
               <Style TargetType="ScrollBar" BasedOn="{StaticResource ThinScrollBar}"/>
             </ScrollViewer.Resources>
@@ -580,13 +580,6 @@
                   <Run Text="  不勾也能发布，只是没法本地预览" Foreground="#7f9cbd" FontSize="9.5"/>
                 </TextBlock>
               </CheckBox>
-
-              <!-- 换主题：改已部署站点配色并自动推送，无需重新部署 -->
-              <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                <Button x:Name="BtnTheme" Style="{StaticResource Ghost}" Content="主题：青绿" Width="108"
-                        ToolTip="点击循环切换站点配色（青绿→墨蓝→暖阳），自动提交推送，几分钟后网站换装"/>
-                <TextBlock Text="  部署后可用，自动推送" FontSize="9.5" Foreground="#7f9cbd" VerticalAlignment="Center"/>
-              </StackPanel>
 
               <!-- 步骤 -->
               <TextBlock Text="部署流程" Style="{StaticResource Lbl}" Margin="0,8,0,4"/>
@@ -874,12 +867,14 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
               <Button x:Name="BtnStart" Style="{StaticResource Primary}" Content="开始部署" Width="128"/>
               <Button x:Name="BtnOpen" Style="{StaticResource Ghost}" Content="打开站点" Width="100" Margin="10,0,0,0"/>
+              <Button x:Name="BtnTheme" Style="{StaticResource Ghost}" Content="主题→墨蓝" Width="104" Margin="10,0,0,0"
+                      ToolTip="点击把站点配色切换为按钮上显示的主题，自动提交推送"/>
               <Button x:Name="BtnUpdate" Style="{StaticResource Ghost}" Content="检查更新" Width="88" Margin="10,0,0,0" ToolTip="从 GitHub 检查并下载新版本"/>
               <Button x:Name="BtnQuit" Style="{StaticResource Ghost}" Content="退出" Width="76" Margin="10,0,0,0"/>
             </StackPanel>
             <TextBlock x:Name="HintText" HorizontalAlignment="Right" VerticalAlignment="Center"
                        FontSize="10.5" Foreground="#6b86a8" TextAlignment="Right"
-                       MaxWidth="440" TextWrapping="Wrap" LineHeight="15"
+                      
                        Text="部署会修改目标目录并调用系统安装程序，请关闭正在运行的 Obsidian"/>
           </Grid>
         </Grid>

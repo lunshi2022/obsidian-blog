@@ -391,7 +391,7 @@ namespace GardenDeployer
             "/* 用 :has() 隐藏整个文件夹容器，只隐藏标题行会留下悬空的子项 */\n" +
             ".nav-folder:has(> .nav-folder-title[data-path=\"src\"]),\n" +
             ".nav-folder:has(> .nav-folder-title[data-path=\"assets\"]),\n" +
-            ".nav-folder:has(> .nav-folder-title[data-path=\"blog-uploader\"]),\n" +
+            ".nav-folder:has(> .nav-folder-title[data-path=\"blog-uploader\"]),\n.nav-folder:has(> .nav-folder-title[data-path=\"site\"]),\n" +
             ".nav-file:has(> .nav-file-title[data-path=\"README.md\"]),\n" +
             ".nav-file:has(> .nav-file-title[data-path=\"package.json\"]),\n" +
             ".nav-file:has(> .nav-file-title[data-path=\"site.config.json\"]),\n" +

@@ -618,8 +618,6 @@ namespace GardenDeployer
                     string pages = "https://" + useOwner + ".github.io/" + C.Repo + "/";
                     string txt = File.ReadAllText(cfgFile, Encoding.UTF8);
                     txt = SetJsonString(txt, "siteUrl", pages);
-                    // 页脚 GitHub 链接
-                    txt = SetJsonStringOrAdd(txt, "repo", "https://github.com/" + useOwner + "/" + C.Repo);
                     if (txt.IndexOf("\"你的名字\"") >= 0)
                         txt = SetJsonString(txt, "author", useOwner);
                     File.WriteAllText(cfgFile, txt, new UTF8Encoding(false));

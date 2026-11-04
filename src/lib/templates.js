@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <footer class="site-footer">
   <span>© ${new Date().getFullYear()} ${esc(site.author || site.title)}</span>
   <span class="foot-sep">·</span>
-  <span><a href="https://obsidian.md" target="_blank" rel="noopener">用 Obsidian 写作</a>${site.repo ? ' · <a href="' + esc(site.repo) + '" target="_blank" rel="noopener">GitHub</a>' : ''} · <a href="${root}feed.xml">RSS</a></span>
+  <span><a href="https://obsidian.md" target="_blank" rel="noopener">用 Obsidian 写作</a> · 由 <a href="https://github.com/lunshi2022/obsidian-blog" target="_blank" rel="noopener">数字花园部署器</a> 生成 · <a href="${root}feed.xml">RSS</a></span>
 </footer>
 
 <div class="search-modal" id="search-modal" hidden>

@@ -73,7 +73,8 @@ namespace GardenDeployer
             {
                 double maxW = SystemParameters.WorkArea.Width - 24;
                 double maxH = SystemParameters.WorkArea.Height - 24;
-                if (W.Width > maxW) W.Width = Math.Floor(maxW);
+                // 不低于底栏按钮所需的最小宽度，避免右侧按钮被裁
+                if (W.Width > maxW) W.Width = Math.Max(760, Math.Floor(maxW));
                 if (W.Height > maxH) W.Height = Math.Floor(maxH);
             }
             catch { }

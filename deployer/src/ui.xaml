@@ -875,14 +875,14 @@
               <ColumnDefinition Width="Auto"/>
               <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <!-- 用 WrapPanel：窗口较窄时按钮自动折行，绝不会被右侧裁掉 -->
-            <WrapPanel x:Name="FooterButtons" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+            <!-- 按钮固定单行；窗口太窄时由代码隐藏右侧提示文字，保证按钮完整 -->
+            <StackPanel x:Name="FooterButtons" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
               <Button x:Name="BtnStart" Style="{StaticResource Primary}" Content="开始部署" Width="120"/>
               <Button x:Name="BtnOpen" Style="{StaticResource Ghost}" Content="打开站点" Width="96" Margin="8,0,0,0"/>
               <Button x:Name="BtnTheme" Style="{StaticResource Ghost}" Content="主题→墨蓝" Width="100" Margin="8,0,0,0"
                       ToolTip="点击把站点配色切换为按钮上显示的主题，自动提交推送"/>
               <Button x:Name="BtnQuit" Style="{StaticResource Ghost}" Content="退出" Width="68" Margin="8,0,0,0"/>
-            </WrapPanel>
+            </StackPanel>
             <TextBlock x:Name="HintText" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"
                        FontSize="10.5" Foreground="#6b86a8" TextAlignment="Right"
                        TextWrapping="NoWrap" Margin="12,0,0,0"

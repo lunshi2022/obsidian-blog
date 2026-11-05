@@ -954,6 +954,48 @@ namespace GardenDeployer
             return best;
         }
 
+        /// <summary>并发探测各下载渠道：各取 64 KB 计时，返回最快的那一个；全失败返回 null</summary>
+        static string PickFastestMirror(string rawUrl, string[] mirrors)
+        {
+            string best = null;
+            long bestMs = long.MaxValue;
+            object gate = new object();
+            System.Threading.Tasks.Task[] tasks = new System.Threading.Tasks.Task[mirrors.Length];
+            for (int i = 0; i < mirrors.Length; i++)
+            {
+                string baseUrl = mirrors[i];
+                tasks[i] = System.Threading.Tasks.Task.Factory.StartNew(delegate()
+                {
+                    try
+                    {
+                        Stopwatch sw = Stopwatch.StartNew();
+                        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(baseUrl + rawUrl);
+                        req.Timeout = 5000;
+                        req.ReadWriteTimeout = 5000;
+                        req.UserAgent = "GardenDeployer";
+                        req.AddRange(0, 65535);
+                        using (WebResponse resp = req.GetResponse())
+                        using (Stream st = resp.GetResponseStream())
+                        {
+                            byte[] buf = new byte[65536];
+                            int total = 0, n;
+                            while (total < buf.Length && (n = st.Read(buf, total, buf.Length - total)) > 0) total += n;
+                        }
+                        sw.Stop();
+                        long ms = sw.ElapsedMilliseconds;
+                        if (ms <= 0) return;
+                        lock (gate)
+                        {
+                            if (ms < bestMs) { bestMs = ms; best = baseUrl; }
+                        }
+                    }
+                    catch { }
+                });
+            }
+            try { System.Threading.Tasks.Task.WaitAll(tasks, 8000); } catch { }
+            return bestMs == long.MaxValue ? null : best;
+        }
+
         /// <summary>Obsidian 安装包约 100 MB，官方下载其实也走 GitHub Releases（国内很慢）。
         /// 镜像可用性随时变（实测 ghproxy.net 常慢到几十 KB/s），所以版本查询和下载都做多镜像轮换，
         /// 全部失败才回退官方直连 / 提示手动安装。</summary>
@@ -993,24 +1035,48 @@ namespace GardenDeployer
 
             Log("", "  最新版：" + ver);
 
-            // 2) 下载：镜像轮换，空串即官方直连；任一成功即用
+            // 2) 下载：先并发测速挑最快的渠道，只显示一个下载地址、只下一次
             string name = "Obsidian-" + ver + ".exe";
             string dest = Path.Combine(tmpDir, name);
-            Exception last = null;
-            foreach (string m in mirrors)
+            string chosen = PickFastestMirror(rawUrl, mirrors);
+            if (chosen == null)
             {
-                string host = m.Length > 0 ? new Uri(m).Host : "github.com 官方直连";
-                try
+                Log("warn", "  各渠道测速均失败，改用官方直连");
+                chosen = "";
+            }
+            string chosenHost = chosen.Length > 0 ? new Uri(chosen).Host : "github.com";
+            Log("cmd", "  下载地址：" + chosenHost);
+
+            Exception last = null;
+            try
+            {
+                Download(chosen + rawUrl, dest, "Obsidian", 5, 15, 55);
+            }
+            catch (Exception ex)
+            {
+                last = ex;
+                Log("warn", "  " + chosenHost + " 下载失败：" + ex.Message);
+            }
+
+            // 只有首选渠道真的失败，才依次尝试其余渠道
+            if (last != null)
+            {
+                foreach (string m in mirrors)
                 {
-                    Log("cmd", "  通过 " + host + " 下载安装包（约 100 MB，可能需要几分钟）");
-                    Download(m + rawUrl, dest, "Obsidian", 5, 15, 55);
-                    last = null;
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    last = ex;
-                    Log("warn", "  " + host + " 下载失败：" + ex.Message);
+                    if (m == chosen) continue;
+                    string host = m.Length > 0 ? new Uri(m).Host : "github.com";
+                    try
+                    {
+                        Log("cmd", "  改用 " + host + " 重试");
+                        Download(m + rawUrl, dest, "Obsidian", 5, 15, 55);
+                        last = null;
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        last = ex;
+                        Log("warn", "  " + host + " 重试失败：" + ex.Message);
+                    }
                 }
             }
             if (last != null) throw new Exception("所有下载渠道均失败：" + last.Message);

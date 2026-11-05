@@ -954,55 +954,13 @@ namespace GardenDeployer
             return best;
         }
 
-        /// <summary>并发探测各下载渠道：各取 64 KB 计时，返回最快的那一个；全失败返回 null</summary>
-        static string PickFastestMirror(string rawUrl, string[] mirrors)
-        {
-            string best = null;
-            long bestMs = long.MaxValue;
-            object gate = new object();
-            System.Threading.Tasks.Task[] tasks = new System.Threading.Tasks.Task[mirrors.Length];
-            for (int i = 0; i < mirrors.Length; i++)
-            {
-                string baseUrl = mirrors[i];
-                tasks[i] = System.Threading.Tasks.Task.Factory.StartNew(delegate()
-                {
-                    try
-                    {
-                        Stopwatch sw = Stopwatch.StartNew();
-                        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(baseUrl + rawUrl);
-                        req.Timeout = 5000;
-                        req.ReadWriteTimeout = 5000;
-                        req.UserAgent = "GardenDeployer";
-                        req.AddRange(0, 65535);
-                        using (WebResponse resp = req.GetResponse())
-                        using (Stream st = resp.GetResponseStream())
-                        {
-                            byte[] buf = new byte[65536];
-                            int total = 0, n;
-                            while (total < buf.Length && (n = st.Read(buf, total, buf.Length - total)) > 0) total += n;
-                        }
-                        sw.Stop();
-                        long ms = sw.ElapsedMilliseconds;
-                        if (ms <= 0) return;
-                        lock (gate)
-                        {
-                            if (ms < bestMs) { bestMs = ms; best = baseUrl; }
-                        }
-                    }
-                    catch { }
-                });
-            }
-            try { System.Threading.Tasks.Task.WaitAll(tasks, 8000); } catch { }
-            return bestMs == long.MaxValue ? null : best;
-        }
-
         /// <summary>Obsidian 安装包约 100 MB，官方下载其实也走 GitHub Releases（国内很慢）。
         /// 镜像可用性随时变（实测 ghproxy.net 常慢到几十 KB/s），所以版本查询和下载都做多镜像轮换，
         /// 全部失败才回退官方直连 / 提示手动安装。</summary>
         void InstallObsidianPackage()
         {
             // 镜像列表：实测速度会变，把当前较快的放前面；空串代表官方直连
-            string[] mirrors = { "https://gh-proxy.com/", "https://ghproxy.net/", "https://ghfast.top/", "" };
+            string[] mirrors = { "https://ghfast.top/", "" };
 
             string ver = null;
             string rawUrl = null;
@@ -1038,12 +996,7 @@ namespace GardenDeployer
             // 2) 下载：先并发测速挑最快的渠道，只显示一个下载地址、只下一次
             string name = "Obsidian-" + ver + ".exe";
             string dest = Path.Combine(tmpDir, name);
-            string chosen = PickFastestMirror(rawUrl, mirrors);
-            if (chosen == null)
-            {
-                Log("warn", "  各渠道测速均失败，改用官方直连");
-                chosen = "";
-            }
+            string chosen = mirrors[0];
             string chosenHost = chosen.Length > 0 ? new Uri(chosen).Host : "github.com";
             Log("cmd", "  下载地址：" + chosenHost);
 

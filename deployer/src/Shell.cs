@@ -324,6 +324,7 @@ namespace GardenDeployer
         /// <summary>启动时自动检查更新：有新版则下载并提示重启，无新版/失败都只写日志</summary>
         void CheckForUpdate()
         {
+            AddLog("cmd", "检查新版本…（当前 v" + Program.AppVersion + "）");
 
             Thread t = new Thread(delegate()
             {
@@ -358,8 +359,16 @@ namespace GardenDeployer
 
                 Post(delegate
                 {
-                    if (tag.Length == 0) return;
-                    if (!newer) return;
+                    if (tag.Length == 0)
+                    {
+                        AddLog("", "未能读取版本信息（可到 Releases 页手动查看）");
+                        return;
+                    }
+                    if (!newer)
+                    {
+                        AddLog("", "已是最新版本 v" + Program.AppVersion);
+                        return;
+                    }
                     AddLog("cmd", "发现新版本 " + tag + "，正在后台下载…");
                     if (exeUrl.Length == 0)
                     {

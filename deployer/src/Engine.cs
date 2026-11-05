@@ -954,13 +954,56 @@ namespace GardenDeployer
             return best;
         }
 
+        /// <summary>并发探测各下载渠道：各取 512 KB 计时，按实测速度从快到慢返回</summary>
+        static List<KeyValuePair<string, double>> RankMirrors(string rawUrl, string[] mirrors)
+        {
+            List<KeyValuePair<string, double>> results = new List<KeyValuePair<string, double>>();
+            object gate = new object();
+            System.Threading.Tasks.Task[] tasks = new System.Threading.Tasks.Task[mirrors.Length];
+            for (int i = 0; i < mirrors.Length; i++)
+            {
+                string baseUrl = mirrors[i];
+                tasks[i] = System.Threading.Tasks.Task.Factory.StartNew(delegate()
+                {
+                    try
+                    {
+                        Stopwatch sw = Stopwatch.StartNew();
+                        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(baseUrl + rawUrl);
+                        req.Timeout = 6000;
+                        req.ReadWriteTimeout = 6000;
+                        req.UserAgent = "GardenDeployer";
+                        req.AddRange(0, 524287);
+                        long got = 0;
+                        using (WebResponse resp = req.GetResponse())
+                        using (Stream st = resp.GetResponseStream())
+                        {
+                            byte[] buf = new byte[65536];
+                            int n;
+                            while (got < 524288 && (n = st.Read(buf, 0, buf.Length)) > 0) got += n;
+                        }
+                        sw.Stop();
+                        if (got <= 0) return;
+                        double kbps = got / 1024.0 / Math.Max(0.001, sw.Elapsed.TotalSeconds);
+                        lock (gate) results.Add(new KeyValuePair<string, double>(baseUrl, kbps));
+                    }
+                    catch { }
+                });
+            }
+            try { System.Threading.Tasks.Task.WaitAll(tasks, 9000); } catch { }
+            results.Sort(delegate(KeyValuePair<string, double> a, KeyValuePair<string, double> b)
+            {
+                return b.Value.CompareTo(a.Value);
+            });
+            return results;
+        }
+
         /// <summary>Obsidian 安装包约 100 MB，官方下载其实也走 GitHub Releases（国内很慢）。
         /// 镜像可用性随时变（实测 ghproxy.net 常慢到几十 KB/s），所以版本查询和下载都做多镜像轮换，
         /// 全部失败才回退官方直连 / 提示手动安装。</summary>
         void InstallObsidianPackage()
         {
             // 镜像列表：实测速度会变，把当前较快的放前面；空串代表官方直连
-            string[] mirrors = { "https://ghfast.top/", "" };
+            string[] mirrors = { "https://ghfast.top/", "https://gh-proxy.com/", "https://ghproxy.net/", "" };
 
             string ver = null;
             string rawUrl = null;
@@ -996,40 +1039,44 @@ namespace GardenDeployer
             // 2) 下载：先并发测速挑最快的渠道，只显示一个下载地址、只下一次
             string name = "Obsidian-" + ver + ".exe";
             string dest = Path.Combine(tmpDir, name);
-            string chosen = mirrors[0];
-            string chosenHost = chosen.Length > 0 ? new Uri(chosen).Host : "github.com";
-            Log("cmd", "  下载地址：" + chosenHost);
+            Log("cmd", "  正在测速选择下载渠道…");
+            List<KeyValuePair<string, double>> ranked = RankMirrors(rawUrl, mirrors);
+            if (ranked.Count == 0)
+            {
+                Log("warn", "  各渠道测速都失败，改试官方直连");
+                ranked.Add(new KeyValuePair<string, double>("", 0));
+            }
 
-            Exception last = null;
+            // 把各渠道实测速度写进日志，便于判断哪条线路可用
             try
             {
-                Download(chosen + rawUrl, dest, "Obsidian", 5, 15, 55);
-            }
-            catch (Exception ex)
-            {
-                last = ex;
-                Log("warn", "  " + chosenHost + " 下载失败：" + ex.Message);
-            }
-
-            // 只有首选渠道真的失败，才依次尝试其余渠道
-            if (last != null)
-            {
-                foreach (string m in mirrors)
+                List<string> parts = new List<string>();
+                for (int i = 0; i < ranked.Count; i++)
                 {
-                    if (m == chosen) continue;
-                    string host = m.Length > 0 ? new Uri(m).Host : "github.com";
-                    try
-                    {
+                    string hhost = ranked[i].Key.Length > 0 ? new Uri(ranked[i].Key).Host : "官方直连";
+                    parts.Add(hhost + " " + Math.Round(ranked[i].Value) + " KB/s");
+                }
+                if (parts.Count > 1) Log("", "  测速结果：" + string.Join(" · ", parts.ToArray()));
+            }
+            catch { }
+
+            Exception last = null;
+            for (int idx = 0; idx < ranked.Count && last == null; idx++)
+            {
+                string baseUrl = ranked[idx].Key;
+                string host = baseUrl.Length > 0 ? new Uri(baseUrl).Host : "github.com";
+                try
+                {
+                    if (idx == 0)
+                        Log("cmd", "  下载地址：" + host + "（实测 " + Math.Round(ranked[idx].Value) + " KB/s）");
+                    else
                         Log("cmd", "  改用 " + host + " 重试");
-                        Download(m + rawUrl, dest, "Obsidian", 5, 15, 55);
-                        last = null;
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        last = ex;
-                        Log("warn", "  " + host + " 重试失败：" + ex.Message);
-                    }
+                    Download(baseUrl + rawUrl, dest, "Obsidian", 5, 15, 55);
+                }
+                catch (Exception ex)
+                {
+                    last = ex;
+                    Log("warn", "  " + host + " 下载失败：" + ex.Message);
                 }
             }
             if (last != null) throw new Exception("所有下载渠道均失败：" + last.Message);

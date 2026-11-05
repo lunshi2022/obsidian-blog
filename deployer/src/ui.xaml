@@ -5,7 +5,7 @@
        
         x:Name="Root"
         Title="数字花园 DEPLOYER"
-        Width="1200" Height="740"
+        Width="1100" Height="700"
         WindowStyle="None" ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen"
         Background="#05070e"
@@ -498,7 +498,7 @@
 
         <!-- 左栏 -->
         <Border Grid.Column="0" BorderBrush="#131f31" BorderThickness="0,0,1,0">
-          <ScrollViewer VerticalScrollBarVisibility="Hidden" Padding="22,16,14,12">
+          <ScrollViewer VerticalScrollBarVisibility="Hidden" Padding="20,14,16,12">
             <ScrollViewer.Resources>
               <Style TargetType="ScrollBar" BasedOn="{StaticResource ThinScrollBar}"/>
             </ScrollViewer.Resources>
@@ -547,9 +547,9 @@
               <!-- 仓库名 + 访问令牌（用户名由令牌自动识别，不再单独填） -->
               <Grid Margin="0,10,0,0">
                 <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="0.82*"/>
+                  <ColumnDefinition Width="1*"/>
                   <ColumnDefinition Width="12"/>
-                  <ColumnDefinition Width="1.18*"/>
+                  <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
                   <TextBlock Text="仓库名" Style="{StaticResource Lbl}" Margin="0,0,0,6"/>
@@ -572,7 +572,7 @@
                     <PasswordBox x:Name="TxtToken" Grid.Column="0" Style="{StaticResource Secret}"
                                  ToolTip="需要勾选 repo + workflow 权限；有效期建议 90 天（默认只有 30 天，且不建议选「无有效期」）。&#x0a;令牌过期后推送会报 401：重新创建一个，并删掉 控制面板 → 凭据管理器 里的 git:https://github.com"/>
                     <Button x:Name="BtnToken" Grid.Column="1" Style="{StaticResource Mini}"
-                            Content="去创建" Margin="6,0,0,0" Padding="7,0" FontSize="9.5"
+                            Content="去创建" Margin="6,0,6,0" Padding="5,0" FontSize="9.5"
                             VerticalAlignment="Stretch" Height="Auto"
                             ToolTip="打开 GitHub 令牌创建页（已预填 repo + workflow 权限）"/>
                   </Grid>

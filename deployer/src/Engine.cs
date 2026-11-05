@@ -427,7 +427,7 @@ namespace GardenDeployer
                 tmpDir = Path.Combine(Path.GetTempPath(), "garden-deploy-" + Guid.NewGuid().ToString("N").Substring(0, 8));
                 Directory.CreateDirectory(tmpDir);
 
-                Log("hi", "数字花园部署器 v1.0.0");
+                Log("hi", "数字花园部署器 v" + Program.AppVersion);
                 Log("", "目标目录：" + C.Target);
                 if (C.DryRun) Log("warn", "模拟模式：不会真的安装或推送");
 
@@ -1245,7 +1245,6 @@ namespace GardenDeployer
                 if (!installed && !InstallViaWinget("Obsidian.Obsidian", "Obsidian", 5, 10, 50))
                 {
                     Log("warn", "  Obsidian 自动安装失败，请手动安装后再打开笔记库（笔记与插件仍会写入部署目录）");
-                    Log("cmd", "  下载地址：https://github.com/obsidianmd/obsidian-releases/releases");
                 }
                 Env.UpdateSessionPath();
                 obs = Env.FindObsidian();
@@ -1398,15 +1397,15 @@ namespace GardenDeployer
 
             string appFile = Path.Combine(vault, @".obsidian\appearance.json");
             string txt = File.Exists(appFile) ? File.ReadAllText(appFile, Encoding.UTF8) : "{}";
-            if (txt.IndexOf("cssSnippets") < 0)
+            if (txt.IndexOf("enabledCssSnippets") < 0)
             {
                 // 该字段不存在：直接插入（SetJsonRaw 会自动处理开头/空对象的情况）
-                txt = SetJsonRaw(txt, "cssSnippets", "[\"" + name + "\"]");
+                txt = SetJsonRaw(txt, "enabledCssSnippets", "[\"" + name + "\"]");
             }
             else if (txt.IndexOf("\"" + name + "\"") < 0)
             {
                 // 字段存在但还没有这个片段：在数组里追加
-                int idx = txt.IndexOf("cssSnippets");
+                int idx = txt.IndexOf("enabledCssSnippets");
                 int b = txt.IndexOf('[', idx);
                 int e = txt.IndexOf(']', b);
                 if (b >= 0 && e > b)
@@ -1418,6 +1417,14 @@ namespace GardenDeployer
                 }
             }
             WriteText(appFile, txt);
+
+            // Obsidian 运行期间会回写 appearance.json，此时写的配置可能被覆盖
+            bool obsRunning = false;
+            try { obsRunning = Process.GetProcessesByName("Obsidian").Length > 0; } catch { }
+            if (obsRunning)
+                Log("warn", "  Obsidian 正在运行：文件树隐藏需重启 Obsidian 后生效；若仍未生效，请在 设置→外观→CSS片段 手动开启 hide-system");
+            else
+                Log("ok", "  已在文件树隐藏系统文件夹（src / assets / blog-uploader / site 等），只显示 content/ 下的笔记");
         }
 
         // ----- 网络 -----

@@ -48,7 +48,7 @@ namespace GardenDeployer
                 "EnvObsDot", "EnvObsVer", "EnvObsPath", "BtnRefresh",
                 "LogHost", "LogScroll", "BtnClearLog",
                 "BarFill", "BarGlow", "BarTrack", "PctText", "PhaseText",
-                "BtnStart", "BtnOpen", "BtnUpdate", "BtnTheme", "BtnQuit", "HintText", "GaugeTarget", "RingRotate", "ChkNode",
+                "BtnStart", "BtnOpen", "BtnTheme", "BtnQuit", "HintText", "GaugeTarget", "RingRotate", "ChkNode",
                 "HeroTitle", "TopScan",
                 "BgGrid", "GridDrift", "BgScan", "ScanShift", "FlowA", "FlowB", "FlowShiftA", "FlowShiftB"
             };
@@ -81,6 +81,15 @@ namespace GardenDeployer
             // 窗口真正显示出来后再自动开始（提权重启后走这条路）
             W.Loaded += delegate
             {
+                // 启动后静默检查更新：有新版才弹窗，没新版/失败只写日志
+                Thread ut = new Thread(delegate()
+                {
+                    Thread.Sleep(2500);
+                    try { CheckForUpdate(); } catch { }
+                });
+                ut.IsBackground = true;
+                ut.Start();
+
                 if (Pending == null) return;
                 Config c = Pending;
                 Pending = null;
@@ -136,7 +145,6 @@ namespace GardenDeployer
             Need<CheckBox>("ChkNode");
             Need<Button>("BtnRefresh");
             Need<Button>("BtnOpen");
-            Need<Button>("BtnUpdate");
             Need<StackPanel>("LogHost");
             Need<ScrollViewer>("LogScroll");
             Need<Grid>("BarTrack");
@@ -194,13 +202,6 @@ namespace GardenDeployer
 
             Button quit = G<Button>("BtnQuit");
             if (quit != null) quit.Click += delegate { CloseSelf(); };
-
-            Button update = G<Button>("BtnUpdate");
-            if (update != null)
-            {
-                update.ToolTip = "当前版本 v" + Program.AppVersion + "，点击检查新版本";
-                update.Click += delegate { CheckForUpdate(update); };
-            }
 
             Button theme = G<Button>("BtnTheme");
             if (theme != null) theme.Click += delegate { CycleTheme(theme); };
@@ -316,11 +317,9 @@ namespace GardenDeployer
 
         // ---------------------------------------------------------------- 检查更新
 
-        /// <summary>查询 GitHub Release 最新版本；有新版则下载并自动替换重启</summary>
-        void CheckForUpdate(Button btn)
+        /// <summary>启动时自动检查更新：有新版则下载并提示重启，无新版/失败都只写日志</summary>
+        void CheckForUpdate()
         {
-            btn.IsEnabled = false;
-            AddLog("cmd", "正在检查更新…（当前版本 v" + Program.AppVersion + "）");
 
             Thread t = new Thread(delegate()
             {
@@ -343,7 +342,7 @@ namespace GardenDeployer
                 }
                 catch (Exception ex)
                 {
-                    Post(delegate { AddLog("err", "检查更新失败：" + ex.Message); btn.IsEnabled = true; });
+                    Post(delegate { AddLog("", "自动检查更新失败（不影响使用）：" + ex.Message); });
                     return;
                 }
 
@@ -355,26 +354,15 @@ namespace GardenDeployer
 
                 Post(delegate
                 {
-                    if (tag.Length == 0)
-                    {
-                        AddLog("err", "未读到版本信息（Release 页面可能还没有发布过）");
-                        btn.IsEnabled = true;
-                        return;
-                    }
-                    if (!newer)
-                    {
-                        AddLog("ok", "已是最新版本 v" + Program.AppVersion);
-                        btn.IsEnabled = true;
-                        return;
-                    }
-                    AddLog("cmd", "发现新版本 " + tag + "，开始下载…");
+                    if (tag.Length == 0) return;
+                    if (!newer) return;
+                    AddLog("cmd", "发现新版本 " + tag + "，正在后台下载…");
                     if (exeUrl.Length == 0)
                     {
-                        AddLog("err", "Release 附件里没有 exe，请到 GitHub Releases 页面手动下载");
-                        btn.IsEnabled = true;
+                        AddLog("warn", "Release 里没有 exe 附件，可到 GitHub Releases 页面手动下载");
                         return;
                     }
-                    DownloadUpdate(tag, exeUrl, btn);
+                    DownloadUpdate(tag, exeUrl);
                 });
             });
             t.IsBackground = true;
@@ -382,7 +370,7 @@ namespace GardenDeployer
         }
 
         /// <summary>下载新版 exe 到旁路文件，确认后由 cmd 在本进程退出后替换并重启</summary>
-        void DownloadUpdate(string tag, string url, Button btn)
+        void DownloadUpdate(string tag, string url)
         {
             string exePath;
             try { exePath = Process.GetCurrentProcess().MainModule.FileName; }
@@ -403,16 +391,15 @@ namespace GardenDeployer
                 catch (Exception ex)
                 {
                     try { File.Delete(newFile); } catch { }
-                    Post(delegate { AddLog("err", "下载失败：" + ex.Message); btn.IsEnabled = true; });
+                    Post(delegate { AddLog("warn", "新版本下载失败，可到 GitHub Releases 手动下载"); });
                     return;
                 }
 
                 Post(delegate
                 {
                     if (MessageBox.Show("新版本 " + tag + " 已下载。\n点击「确定」自动替换并重启部署器。",
-                            "检查更新", MessageBoxButton.OKCancel, MessageBoxImage.Information) != MessageBoxResult.OK)
+                            "发现新版本", MessageBoxButton.OKCancel, MessageBoxImage.Information) != MessageBoxResult.OK)
                     {
-                        btn.IsEnabled = true;
                         return;
                     }
                     // exe 运行中无法覆盖自己：交给 cmd 等本进程退出后再替换、重启
@@ -608,7 +595,7 @@ namespace GardenDeployer
             SetStatus("就绪", "#2c3a54");
 
             RefreshThemeLabel();
-            AddLog("hi", "数字花园部署器已就绪");
+            AddLog("hi", "数字花园部署器 v" + Program.AppVersion + " 已就绪");
             AddLog("", "流程：填好目录与令牌 → 点「开始部署」→ 完成后点「打开站点」");
             if (!IsAdmin()) AddLog("warn", "当前不是管理员权限，安装 Git/Obsidian 时可能失败");
 

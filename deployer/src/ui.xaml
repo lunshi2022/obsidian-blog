@@ -871,17 +871,21 @@
           </Border>
 
           <Grid Grid.Row="2">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-              <Button x:Name="BtnStart" Style="{StaticResource Primary}" Content="开始部署" Width="128"/>
-              <Button x:Name="BtnOpen" Style="{StaticResource Ghost}" Content="打开站点" Width="100" Margin="10,0,0,0"/>
-              <Button x:Name="BtnTheme" Style="{StaticResource Ghost}" Content="主题→墨蓝" Width="104" Margin="10,0,0,0"
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <!-- 用 WrapPanel：窗口较窄时按钮自动折行，绝不会被右侧裁掉 -->
+            <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+              <Button x:Name="BtnStart" Style="{StaticResource Primary}" Content="开始部署" Width="120"/>
+              <Button x:Name="BtnOpen" Style="{StaticResource Ghost}" Content="打开站点" Width="96" Margin="8,0,0,0"/>
+              <Button x:Name="BtnTheme" Style="{StaticResource Ghost}" Content="主题→墨蓝" Width="100" Margin="8,0,0,0"
                       ToolTip="点击把站点配色切换为按钮上显示的主题，自动提交推送"/>
-              <Button x:Name="BtnUpdate" Style="{StaticResource Ghost}" Content="检查更新" Width="88" Margin="10,0,0,0" ToolTip="从 GitHub 检查并下载新版本"/>
-              <Button x:Name="BtnQuit" Style="{StaticResource Ghost}" Content="退出" Width="76" Margin="10,0,0,0"/>
-            </StackPanel>
-            <TextBlock x:Name="HintText" HorizontalAlignment="Right" VerticalAlignment="Center"
+              <Button x:Name="BtnQuit" Style="{StaticResource Ghost}" Content="退出" Width="68" Margin="8,0,0,0"/>
+            </WrapPanel>
+            <TextBlock x:Name="HintText" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"
                        FontSize="10.5" Foreground="#6b86a8" TextAlignment="Right"
-                      
+                       TextTrimming="CharacterEllipsis" Margin="12,0,0,0"
                        Text="部署会修改目标目录并调用系统安装程序，请关闭正在运行的 Obsidian"/>
           </Grid>
         </Grid>

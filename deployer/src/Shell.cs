@@ -48,7 +48,7 @@ namespace GardenDeployer
                 "EnvObsDot", "EnvObsVer", "EnvObsPath", "BtnRefresh",
                 "LogHost", "LogScroll", "BtnClearLog",
                 "BarFill", "BarGlow", "BarTrack", "PctText", "PhaseText",
-                "BtnStart", "BtnOpen", "BtnTheme", "BtnQuit", "HintText", "GaugeTarget", "RingRotate", "ChkNode",
+                "BtnStart", "BtnOpen", "BtnTheme", "BtnQuit", "FooterButtons", "HintText", "GaugeTarget", "RingRotate", "ChkNode",
                 "HeroTitle", "TopScan",
                 "BgGrid", "GridDrift", "BgScan", "ScanShift", "FlowA", "FlowB", "FlowShiftA", "FlowShiftB"
             };
@@ -89,6 +89,9 @@ namespace GardenDeployer
                 });
                 ut.IsBackground = true;
                 ut.Start();
+
+                SyncFooterHint();
+                W.SizeChanged += delegate { SyncFooterHint(); };
 
                 if (Pending == null) return;
                 Config c = Pending;
@@ -556,6 +559,23 @@ namespace GardenDeployer
             });
             t.IsBackground = true;
             t.Start();
+        }
+
+        /// <summary>右下角提示：空间够就完整单行显示，不够就整条隐藏，避免把按钮挤出窗口</summary>
+        void SyncFooterHint()
+        {
+            try
+            {
+                TextBlock hint = G<TextBlock>("HintText");
+                FrameworkElement buttons = G<FrameworkElement>("FooterButtons");
+                if (hint == null || buttons == null) return;
+
+                hint.Visibility = Visibility.Visible;
+                hint.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                double need = buttons.ActualWidth + Math.Max(16, hint.DesiredSize.Width) + 40;
+                if (W.ActualWidth < need) hint.Visibility = Visibility.Collapsed;
+            }
+            catch { }
         }
 
         /// <summary>从 git 输出里挑真实错误行（最后一行固定是通用的 failed to push some refs）</summary>
